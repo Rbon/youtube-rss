@@ -1,4 +1,3 @@
-require "date"
 require "open-uri"
 
 class Main
@@ -12,6 +11,7 @@ class Main
   def run
     @channel_list.each do |channel|
       feed = make_feed(channel)
+      puts feed
       feed = dl_feed(feed)
       get_video(feed)
       dl_video
@@ -19,6 +19,7 @@ class Main
   end
 
   def make_feed(channel)
+    channel = channel.split("#")[0]
     type, id = channel.split("/")
     case type
     when "channel"
