@@ -1,20 +1,39 @@
-### https://www.youtube.com/feeds/videos.xml?channel_id=UCTjqo_3046IXFFGZ_M5jedA
-
 require "date"
+require "open-uri"
+
 class Main
   def initialize
     @file = File.read(ARGV[0])
     @id_regex = Regexp.new("<yt:videoId>(?<id>.*)<\/yt:videoId>")
     @videos = nil
+    @channel_list = File.readlines("channel_list.txt")
   end
 
   def run
-    get_list
-    dl_video
+    @channel_list.each do |channel|
+      feed = make_feed(channel)
+      feed = dl_feed(feed)
+      get_video(feed)
+      dl_video
+    end
   end
 
-  def get_list
-    @file.each_line do |line|
+  def make_feed(channel)
+    type, id = channel.split("/")
+    case type
+    when "channel"
+      return "https://www.youtube.com/feeds/videos.xml?channel_id=#{id}"
+    when "user"
+      return "https://www.youtube.com/feeds/videos.xml?user=#{id}"
+    end
+  end
+
+  def dl_feed(feed)
+    open(feed)
+  end
+
+  def get_video(feed)
+    feed.each_line do |line|
       if line.include?("<yt:videoId>")
         @video = @id_regex.match(line)[:id]
         return
