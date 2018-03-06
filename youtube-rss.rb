@@ -1,11 +1,15 @@
 require "open-uri"
+require "time"
 
 class Main
   def initialize
-    @file = File.read(ARGV[0])
     @id_regex = Regexp.new("<yt:videoId>(?<id>.*)<\/yt:videoId>")
-    @videos = nil
+    @time_regex = Regexp.new("<published>(?<published>.*)<\/published>")
+    @videos = []
     @channel_list = File.readlines("channel_list.txt")
+    @entry = false
+    @last_sync_time = Time.parse(File.read("time.txt"))
+    puts @last_sync_time.inspect
   end
 
   def run
@@ -13,9 +17,15 @@ class Main
       feed = make_feed(channel)
       puts feed
       feed = dl_feed(feed)
-      get_video(feed)
-      dl_video
+      # feed = File.read("videos.xml")
+      get_videos(feed)
+      dl_videos
     end
+    update_sync_time
+  end
+
+  def update_sync_time
+    File.open("time.txt", "w") { |file| file.write("#{Time.now.to_s}\n") }
   end
 
   def make_feed(channel)
@@ -33,20 +43,37 @@ class Main
     open(feed)
   end
 
-  def get_video(feed)
+  def get_videos(feed)
+    entry = false
+    id = nil
+    published = nil
     feed.each_line do |line|
-      if line.include?("<yt:videoId>")
-        @video = @id_regex.match(line)[:id]
-        return
+      if entry
+        if line.include?("<yt:videoId>")
+          id = @id_regex.match(line)[:id]
+        end
+        if line.include?("<published>")
+          published = Time.parse(@time_regex.match(line)[:published])
+        end
+        if id and published
+          @videos << {id: id, published: published}
+          id = nil
+          published = nil
+        end
       end
+      entry = true if line.strip == "<entry>"
     end
   end
 
-  def dl_video
-    if check_video(@video) == false
-      system("youtube-dl #{@video}")
-      add_to_db(@video)
-      puts "ADDED TO DB"
+  def dl_videos
+    @videos.each do |video|
+      if video[:published] > @last_sync_time
+        if check_video(video[:id]) == false
+          system("youtube-dl #{video[:id]}")
+          add_to_db(video[:id])
+          puts "ADDED TO DB"
+        end
+      end
     end
   end
 
