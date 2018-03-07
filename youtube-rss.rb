@@ -7,8 +7,10 @@ class Main
       id_regex: Regexp.new("<yt:videoId>(?<id>.*)<\/yt:videoId>"),
       time_regex: Regexp.new("<published>(?<published>.*)<\/published>"),
       video_class: Video,
-      channel_list: File.readlines("channel_list.txt"),
-      last_sync_time: Time.parse(File.read("time.txt"))
+      last_sync_time: Time.parse(File.read("time.txt")),
+      channel_list: ChannelList.new(
+        file: File.readlines("channel_list.txt"), channel_class: Channel
+      ).list
     ).run
   end
 end
@@ -41,16 +43,6 @@ class YoutubeRss
     File.open("time.txt", "w") { |file| file.write("#{Time.now.to_s}\n") }
   end
 
-  def make_feed(channel)
-    channel = channel.split("#")[0]
-    type, id = channel.split("/")
-    case type
-    when "channel"
-      return "https://www.youtube.com/feeds/videos.xml?channel_id=#{id}"
-    when "user"
-      return "https://www.youtube.com/feeds/videos.xml?user=#{id}"
-    end
-  end
 
   def dl_feed(feed)
     open(feed)
@@ -100,12 +92,30 @@ class YoutubeRss
   end
 end
 
-class ChannelList
+class Channel
   def initialize(opts)
-    @file = opts[:file]
-    file.each_line { |line| Channel }
+    @id = opts[:id]
+    @feed = {
+      channel: "https://www.youtube.com/feeds/videos.xml?channel_id=#{@id}",
+      user: "https://www.youtube.com/feeds/videos.xml?user=#{@id}"
+    }[opts[:type]]
   end
 end
+
+class ChannelList
+  attr_reader :list
+
+  def initialize(opts)
+    @file = opts[:file]
+    @channel_class = opts[:channel_class]
+    @list = @file.map do |line|
+      line = line.split("#")[0]
+      type, id = line.split("/")
+      @channel_class.new(id: id, type: type)
+    end
+  end
+end
+
 
 class Video
   attr_reader :id, :published
