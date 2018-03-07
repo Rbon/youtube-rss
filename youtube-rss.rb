@@ -2,14 +2,26 @@ require "open-uri"
 require "time"
 
 class Main
-  def initialize
-    @id_regex = Regexp.new("<yt:videoId>(?<id>.*)<\/yt:videoId>")
-    @time_regex = Regexp.new("<published>(?<published>.*)<\/published>")
-    @video = Video
-    @videos = []
-    @channel_list = File.readlines("channel_list.txt")
+  def run
+    YoutubeRss.new(
+      id_regex: Regexp.new("<yt:videoId>(?<id>.*)<\/yt:videoId>"),
+      time_regex: Regexp.new("<published>(?<published>.*)<\/published>"),
+      video_class: Video,
+      channel_list: File.readlines("channel_list.txt"),
+      last_sync_time: Time.parse(File.read("time.txt"))
+    ).run
+  end
+end
+
+class YoutubeRss
+  def initialize(opts)
+    @id_regex = opts[:id_regex]
+    @time_regex = opts[:time_regex]
+    @video_class = opts[:video_class]
+    @video_list = []
+    @channel_list = opts[:channel_list]
     @entry = false
-    @last_sync_time = Time.parse(File.read("time.txt"))
+    @last_sync_time = opts[:last_sync_time]
     puts @last_sync_time.inspect
   end
 
@@ -57,7 +69,7 @@ class Main
           published = Time.parse(@time_regex.match(line)[:published])
         end
         if id and published
-          @videos << @video.new(id: id, published: published)
+          @video_list << @video_class.new(id: id, published: published)
           id = nil
           published = nil
         end
@@ -67,7 +79,7 @@ class Main
   end
 
   def dl_videos
-    @videos.each do |video|
+    @video_list.each do |video|
       if video.published > @last_sync_time
         if check_video(video.id) == false
           system("youtube-dl #{video.id}")
@@ -85,6 +97,13 @@ class Main
 
   def add_to_db(id)
     File.open("dldb.txt", "a") { |file| file.write("#{id}\n") }
+  end
+end
+
+class ChannelList
+  def initialize(opts)
+    @file = opts[:file]
+    file.each_line { |line| Channel }
   end
 end
 
