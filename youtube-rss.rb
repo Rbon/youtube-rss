@@ -5,6 +5,7 @@ class Main
   def initialize
     @id_regex = Regexp.new("<yt:videoId>(?<id>.*)<\/yt:videoId>")
     @time_regex = Regexp.new("<published>(?<published>.*)<\/published>")
+    @video = Video
     @videos = []
     @channel_list = File.readlines("channel_list.txt")
     @entry = false
@@ -14,14 +15,14 @@ class Main
 
   def run
     @channel_list.each do |channel|
-      feed = make_feed(channel)
-      puts feed
-      feed = dl_feed(feed)
-      # feed = File.read("videos.xml")
+      # feed = make_feed(channel)
+      # puts feed
+      # feed = dl_feed(feed)
+      feed = File.read("videos.xml")
       get_videos(feed)
       dl_videos
     end
-    update_sync_time
+    # update_sync_time
   end
 
   def update_sync_time
@@ -56,7 +57,7 @@ class Main
           published = Time.parse(@time_regex.match(line)[:published])
         end
         if id and published
-          @videos << {id: id, published: published}
+          @videos << @video.new(id: id, published: published)
           id = nil
           published = nil
         end
@@ -67,10 +68,10 @@ class Main
 
   def dl_videos
     @videos.each do |video|
-      if video[:published] > @last_sync_time
-        if check_video(video[:id]) == false
-          system("youtube-dl #{video[:id]}")
-          add_to_db(video[:id])
+      if video.published > @last_sync_time
+        if check_video(video.id) == false
+          system("youtube-dl #{video.id}")
+          add_to_db(video.id)
           puts "ADDED TO DB"
         end
       end
@@ -84,6 +85,15 @@ class Main
 
   def add_to_db(id)
     File.open("dldb.txt", "a") { |file| file.write("#{id}\n") }
+  end
+end
+
+class Video
+  attr_reader :id, :published
+
+  def initialize(opts)
+    @id = opts[:id]
+    @published = opts[:published]
   end
 end
 
