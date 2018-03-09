@@ -2,24 +2,27 @@ require "open-uri"
 require "time"
 
 class Main
+  def initialize
+    @channel_list_file = "channel_list.txt"
+    @time_file = "time.txt"
+    @channel_maker = ChannelMaker.new(channel_class: Channel)
+    @video_maker = VideoMaker.new(video_class: Video)
+  end
+
   def run
+    channel_list = File.readlines(@channel_list_file)
+    channel_list.map! { |line| Channel.new(line: line) }
     YoutubeRss.new(
-      id_regex: Regexp.new("<yt:videoId>(?<id>.*)<\/yt:videoId>"),
-      time_regex: Regexp.new("<published>(?<published>.*)<\/published>"),
-      video_class: Video,
-      last_sync_time: Time.parse(File.read("time.txt")),
-      channel_list: ChannelList.new(
-        file: File.readlines("channel_list.txt"), channel_class: Channel
-      ).list
+      last_sync_time: Time.parse(File.read(@time_file)),
+      channel_list: channel_list,
+      video_maker: @video_maker
     ).run
   end
 end
 
 class YoutubeRss
   def initialize(opts)
-    @id_regex = opts[:id_regex]
-    @time_regex = opts[:time_regex]
-    @video_class = opts[:video_class]
+    @video_maker = opts[:video_maker]
     @video_list = []
     @channel_list = opts[:channel_list]
     @entry = false
@@ -33,7 +36,7 @@ class YoutubeRss
       # puts feed
       # feed = dl_feed(feed)
       feed = File.read("videos.xml")
-      get_videos(feed)
+      @video_list = @video_maker.make_videos(feed)
       dl_videos
     end
     # update_sync_time
@@ -92,30 +95,57 @@ class YoutubeRss
   end
 end
 
+class VideoMaker
+  def initialize(opts)
+    @video_class = opts[:video_class]
+    @id_regex = Regexp.new("<yt:videoId>(?<id>.*)<\/yt:videoId>")
+    @time_regex = Regexp.new("<published>(?<published>.*)<\/published>")
+  end
+
+  def make_videos(feed)
+    entry = false
+    id = nil
+    published = nil
+    video_list = []
+    feed.each_line do |line|
+      if entry
+        if line.include?("<yt:videoId>")
+          id = @id_regex.match(line)[:id]
+        end
+        if line.include?("<published>")
+          published = Time.parse(@time_regex.match(line)[:published])
+        end
+        if id and published
+          video_list << @video_class.new(id: id, published: published)
+          id = nil
+          published = nil
+        end
+      end
+      entry = true if line.strip == "<entry>"
+    end
+    video_list
+  end
+end
+
+class ChannelMaker
+  def initialize(opts)
+    @channel_class = opts[:channel_class]
+  end
+
+  def make_channels(file)
+    File.readlines(file).map { |line| @channel_class.new(line: line) }
+  end
+end
+
 class Channel
   def initialize(opts)
-    @id = opts[:id]
+    type, id = opts[:line].split("#")[0].split("/")
     @feed = {
-      channel: "https://www.youtube.com/feeds/videos.xml?channel_id=#{@id}",
-      user: "https://www.youtube.com/feeds/videos.xml?user=#{@id}"
-    }[opts[:type]]
+      channel: "https://www.youtube.com/feeds/videos.xml?channel_id=#{id}",
+      user: "https://www.youtube.com/feeds/videos.xml?user=#{id}"
+    }[type]
   end
 end
-
-class ChannelList
-  attr_reader :list
-
-  def initialize(opts)
-    @file = opts[:file]
-    @channel_class = opts[:channel_class]
-    @list = @file.map do |line|
-      line = line.split("#")[0]
-      type, id = line.split("/")
-      @channel_class.new(id: id, type: type)
-    end
-  end
-end
-
 
 class Video
   attr_reader :id, :published
