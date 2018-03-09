@@ -32,9 +32,7 @@ class YoutubeRss
 
   def run
     @channel_maker.list(@channel_list_file).each do |channel|
-      # feed = make_feed(channel)
-      # puts feed
-      # open(feed)
+      # feed = open(make_feed(channel))
       feed = File.read("videos.xml")
       @video_dlr.dl_videos(@video_maker.list(feed))
     end
