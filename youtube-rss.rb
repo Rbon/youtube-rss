@@ -3,56 +3,53 @@ require "time"
 
 class Main
   def initialize
+    @sync_time_file = "time.txt"
     @channel_list_file = "channel_list.txt"
-    @time_file = "time.txt"
     @channel_maker = ChannelMaker.new(channel_class: Channel)
     @video_maker = VideoMaker.new(video_class: Video)
+    @video_dlr = VideoDownloader.new(sync_time_file: "time.txt")
   end
 
   def run
-    YTRSS.new(
-      last_sync_time: Time.parse(File.read(@time_file)),
+    YoutubeRss.new(
+      sync_time_file: @sync_time_file,
       channel_list_file: @channel_list_file,
       channel_maker: @channel_maker,
-      video_maker: @video_maker
+      video_maker: @video_maker,
+      video_dlr: @video_dlr
     ).run
   end
 end
 
-class YTRSS
+class YoutubeRss
   def initialize(opts)
+    @sync_time_file = opts[:sync_time_file]
+    @channel_list_file = opts[:channel_list_file]
     @channel_maker = opts[:channel_maker]
     @video_maker = opts[:video_maker]
-    @video_list = []
-    @channel_list_file = opts[:channel_list_file]
-    @entry = false
-    @last_sync_time = opts[:last_sync_time]
-    puts @last_sync_time.inspect
+    @video_dlr = opts[:video_dlr]
   end
 
   def run
-    channel_list = @channel_maker.make_channels(@channel_list_file)
-    channel_list.each do |channel|
+    @channel_maker.list(@channel_list_file).each do |channel|
       # feed = make_feed(channel)
       # puts feed
-      # feed = dl_feed(feed)
+      # open(feed)
       feed = File.read("videos.xml")
-      @video_list = @video_maker.make_videos(feed)
-      dl_videos
+      @video_dlr.dl_videos(@video_maker.list(feed))
     end
-    # update_sync_time
+    File.write(@sync_time_file, Time.now)
+  end
+end
+
+class VideoDownloader
+  def initialize(opts)
+    @last_sync_time = Time.parse(File.read(opts[:sync_time_file]))
+    puts "Last sync time: #{@last_sync_time}"
   end
 
-  def update_sync_time
-    File.open("time.txt", "w") { |file| file.write("#{Time.now.to_s}\n") }
-  end
-
-  def dl_feed(feed)
-    open(feed)
-  end
-
-  def dl_videos
-    @video_list.each do |video|
+  def dl_videos(video_list)
+    video_list.each do |video|
       if video.published > @last_sync_time
         if check_video(video.id) == false
           system("youtube-dl #{video.id}")
@@ -80,7 +77,7 @@ class VideoMaker
     @time_regex = Regexp.new("<published>(?<published>.*)<\/published>")
   end
 
-  def make_videos(feed)
+  def list(feed)
     entry = false
     id = nil
     published = nil
@@ -110,7 +107,7 @@ class ChannelMaker
     @channel_class = opts[:channel_class]
   end
 
-  def make_channels(file)
+  def list(file)
     File.readlines(file).map { |line| @channel_class.new(line: line) }
   end
 end
