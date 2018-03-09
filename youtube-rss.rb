@@ -10,28 +10,29 @@ class Main
   end
 
   def run
-    channel_list = File.readlines(@channel_list_file)
-    channel_list.map! { |line| Channel.new(line: line) }
-    YoutubeRss.new(
+    YTRSS.new(
       last_sync_time: Time.parse(File.read(@time_file)),
-      channel_list: channel_list,
+      channel_list_file: @channel_list_file,
+      channel_maker: @channel_maker,
       video_maker: @video_maker
     ).run
   end
 end
 
-class YoutubeRss
+class YTRSS
   def initialize(opts)
+    @channel_maker = opts[:channel_maker]
     @video_maker = opts[:video_maker]
     @video_list = []
-    @channel_list = opts[:channel_list]
+    @channel_list_file = opts[:channel_list_file]
     @entry = false
     @last_sync_time = opts[:last_sync_time]
     puts @last_sync_time.inspect
   end
 
   def run
-    @channel_list.each do |channel|
+    channel_list = @channel_maker.make_channels(@channel_list_file)
+    channel_list.each do |channel|
       # feed = make_feed(channel)
       # puts feed
       # feed = dl_feed(feed)
@@ -46,31 +47,8 @@ class YoutubeRss
     File.open("time.txt", "w") { |file| file.write("#{Time.now.to_s}\n") }
   end
 
-
   def dl_feed(feed)
     open(feed)
-  end
-
-  def get_videos(feed)
-    entry = false
-    id = nil
-    published = nil
-    feed.each_line do |line|
-      if entry
-        if line.include?("<yt:videoId>")
-          id = @id_regex.match(line)[:id]
-        end
-        if line.include?("<published>")
-          published = Time.parse(@time_regex.match(line)[:published])
-        end
-        if id and published
-          @video_list << @video_class.new(id: id, published: published)
-          id = nil
-          published = nil
-        end
-      end
-      entry = true if line.strip == "<entry>"
-    end
   end
 
   def dl_videos
