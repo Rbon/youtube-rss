@@ -59,7 +59,8 @@ class FeedParser
   def channel(url)
     url = url.split("#")[0]
     type, id = url.split("/")
-    feed = open(@feed_types[type.to_sym] % id).string
+    # feed = open(@feed_types[type.to_sym] % id)
+    feed = open(@feed_types[type.to_sym] % id) { |io| data = io.read }
     feed = feed.split("<entry>")
     data = {}
     feed[0].lines do |line|
@@ -136,16 +137,7 @@ class Video
   end
 
   def in_cache?
-    @dldb_file.readlines.include?("#{@id}\n")
-  end
-end
-
-class XMLGetter
-  def initialize
-    # @feed = open({
-      # channel: "https://www.youtube.com/feeds/videos.xml?channel_id=#{id}",
-      # user: "https://www.youtube.com/feeds/videos.xml?user=#{id}"
-    # }[type])
+    File.readlines(@dldb_file).include?("#{@id}\n")
   end
 end
 
