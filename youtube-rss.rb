@@ -33,11 +33,9 @@ class YoutubeRss
   end
 
   def run
-    puts File.read(@sync_time_file) # remove after merge
     @channel_list.each do |line|
       channel = @feed_parser.channel(line)
-      # puts channel.name
-      # ^ uncomment after merge
+      puts channel.name
       channel.video_list.each(&:download)
     end
     File.write(@sync_time_file, Time.now)
@@ -72,7 +70,6 @@ class FeedParser
       name: data["name"],
       video_list: video_list
     )
-    puts @feed_types[type.to_sym] # remove after merge
   end
 
   private
