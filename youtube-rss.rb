@@ -33,10 +33,11 @@ class YoutubeRss
   end
 
   def run
-    puts File.read(@sync_time_file)
+    puts File.read(@sync_time_file) # remove after merge
     @channel_list.each do |line|
       channel = @feed_parser.channel(line)
-      puts channel.name
+      # puts channel.name
+      # ^ uncomment after merge
       channel.video_list.each(&:download)
     end
     File.write(@sync_time_file, Time.now)
@@ -59,7 +60,6 @@ class FeedParser
   def channel(url)
     url = url.split("#")[0]
     type, id = url.split("/")
-    # feed = open(@feed_types[type.to_sym] % id)
     feed = open(@feed_types[type.to_sym] % id) { |io| data = io.read }
     feed = feed.split("<entry>")
     data = {}
@@ -72,6 +72,7 @@ class FeedParser
       name: data["name"],
       video_list: video_list
     )
+    puts @feed_types[type.to_sym] # remove after merge
   end
 
   private
@@ -116,20 +117,17 @@ class Video
   end
 
   def download
-    # puts "Checking video: #{@title}"
     send("download_when_#{not (old? or in_cache?)}")
   end
 
   private
 
   def download_when_true
-    # puts "Downloading: #{@title}"
     system("youtube-dl #{@id}")
     File.open(@dldb_file, "a") { |file| file.write("#{@id}\n") }
   end
 
   def download_when_false
-    # puts "Not downloading: #{@title}"
   end
 
   def old?
