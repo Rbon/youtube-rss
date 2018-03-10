@@ -5,12 +5,14 @@ class Main
   def initialize
     @sync_time_file = "time.txt"
     @dldb_file = "dldb.txt"
+    @dl_path = ARGV[0] || "."
     @channel_list = File.readlines("channel_list.txt")
     @feed_parser = FeedParser.new(
       channel_class: Channel,
       video_class: Video,
       last_sync_time: Time.parse(File.read(@sync_time_file)),
-      dldb_file: @dldb_file
+      dldb_file: @dldb_file,
+      dl_path: @dl_path
     )
   end
 
@@ -49,6 +51,7 @@ class FeedParser
     @tag_regex = /<(?<tag>.*)>(?<value>.*)<.*>/
     @last_sync_time = opts[:last_sync_time]
     @dldb_file = opts[:dldb_file]
+    @dl_path = opts[:dl_path]
     @feed_types = {
       channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
       user: "https://www.youtube.com/feeds/videos.xml?user=%s"
@@ -86,7 +89,8 @@ class FeedParser
       title: data["title"],
       published: published,
       dldb_file: @dldb_file,
-      last_sync_time: @last_sync_time
+      last_sync_time: @last_sync_time,
+      dl_path: @dl_path
     )
   end
 end
@@ -111,6 +115,7 @@ class Video
     @published = opts[:published]
     @last_sync_time = opts[:last_sync_time]
     @dldb_file = opts[:dldb_file]
+    @dl_path = opts[:dl_path]
   end
 
   def download
@@ -120,7 +125,8 @@ class Video
   private
 
   def download_when_true
-    system("youtube-dl #{@id}")
+    # system("youtube-dl #{@id} #{@dl_path}")
+    Dir.chdir(File.expand_path(@dl_path)) { system("youtube-dl #{@id}") }
     File.open(@dldb_file, "a") { |file| file.write("#{@id}\n") }
   end
 
