@@ -5,7 +5,7 @@ class Main
   def initialize
     @sync_time_file = "time.txt"
     @dldb_file = "dldb.txt"
-    @channel_list_file = File.read("channel_list.txt")
+    @channel_list = File.readlines("channel_list.txt")
     @feed_parser = FeedParser.new(
       channel_class: Channel,
       video_class: Video,
@@ -17,7 +17,7 @@ class Main
   def run
     YoutubeRss.new(
       sync_time_file: @sync_time_file,
-      channel_list_file: @channel_list_file,
+      channel_list: @channel_list,
       video_dlr: @video_dlr,
       feed_parser: @feed_parser
     ).run
@@ -27,7 +27,7 @@ end
 class YoutubeRss
   def initialize(opts)
     @sync_time_file = opts[:sync_time_file]
-    @channel_list = ["test"]
+    @channel_list = opts[:channel_list]
     @feed_parser = opts[:feed_parser]
     @video_dlr = opts[:video_dlr]
   end
@@ -35,8 +35,7 @@ class YoutubeRss
   def run
     puts File.read(@sync_time_file)
     @channel_list.each do |line|
-      feed = File.read("videos.xml")
-      channel = @feed_parser.channel(feed)
+      channel = @feed_parser.channel(line)
       puts channel.name
       channel.video_list.each(&:download)
     end
@@ -51,9 +50,16 @@ class FeedParser
     @tag_regex = /<(?<tag>.*)>(?<value>.*)<.*>/
     @last_sync_time = opts[:last_sync_time]
     @dldb_file = opts[:dldb_file]
+    @feed_types = {
+      channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
+      user: "https://www.youtube.com/feeds/videos.xml?user=%s"
+    }
   end
 
-  def channel(feed)
+  def channel(url)
+    url = url.split("#")[0]
+    type, id = url.split("/")
+    feed = open(@feed_types[type.to_sym] % id).string
     feed = feed.split("<entry>")
     data = {}
     feed[0].lines do |line|
@@ -109,20 +115,20 @@ class Video
   end
 
   def download
-    puts "Checking video: #{@title}"
+    # puts "Checking video: #{@title}"
     send("download_when_#{not (old? or in_cache?)}")
   end
 
   private
 
   def download_when_true
-    puts "Downloading: #{@title}"
+    # puts "Downloading: #{@title}"
     system("youtube-dl #{@id}")
     File.open(@dldb_file, "a") { |file| file.write("#{@id}\n") }
   end
 
   def download_when_false
-    puts "Not downloading: #{@title}"
+    # puts "Not downloading: #{@title}"
   end
 
   def old?
