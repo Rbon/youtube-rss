@@ -4,19 +4,17 @@ require "time"
 class Main
   def initialize
     @sync_time_file = "time.txt"
-    @channel_list_file = "channel_list.txt"
-    @channel_maker = ChannelMaker.new(channel_class: Channel)
-    @video_maker = VideoMaker.new(video_class: Video)
+    @channel_list_file = File.read("channel_list.txt")
     @video_dlr = VideoDownloader.new(sync_time_file: "time.txt")
+    @feed_parser = FeedParser.new(channel_class: Channel, video_class: Video)
   end
 
   def run
     YoutubeRss.new(
       sync_time_file: @sync_time_file,
       channel_list_file: @channel_list_file,
-      channel_maker: @channel_maker,
-      video_maker: @video_maker,
-      video_dlr: @video_dlr
+      video_dlr: @video_dlr,
+      feed_parser: @feed_parser
     ).run
   end
 end
@@ -25,18 +23,89 @@ class YoutubeRss
   def initialize(opts)
     @sync_time_file = opts[:sync_time_file]
     @channel_list_file = opts[:channel_list_file]
-    @channel_maker = opts[:channel_maker]
-    @video_maker = opts[:video_maker]
+    @feed_parser = opts[:feed_parser]
     @video_dlr = opts[:video_dlr]
   end
 
   def run
-    @channel_maker.list(@channel_list_file).each do |channel|
+    @channel_list_file.each_line do |line|
       # feed = open(make_feed(channel))
-      feed = File.read("videos.xml")
-      @video_dlr.dl_videos(@video_maker.list(feed))
+      # feed = File.read("videos.xml")
+      channel = @channel_class.new(line: line, video_class: @video_class)
+      puts channel.video_list[0].published
+      @video_dlr.dl(channel.video_list)
     end
     File.write(@sync_time_file, Time.now)
+  end
+
+  def run
+    feed = File.read("videos.xml")
+    channel = @feed_parser.channel(feed)
+    puts channel.video_list[0].title
+  end
+end
+
+class FeedParser
+  def initialize(opts)
+    @channel_class = opts[:channel_class]
+    @video_class = opts[:video_class]
+    @tag_regex = /<(?<tag>.*)>(?<value>.*)<.*>/
+  end
+
+  def channel(feed)
+    feed = feed.split("<entry>")
+    data = {}
+    feed[0].lines do |line|
+      @tag_regex.match(line) { |match| data[match[:tag]] = match[:value] }
+    end
+    video_list = feed.drop(1).map { |entry| video(entry) }
+    @channel_class.new(
+      id: data["yt:channelId"],
+      name: data["name"],
+      video_list: video_list
+    )
+  end
+
+  def video(info)
+    data = {}
+    info.lines do |line|
+      @tag_regex.match(line) { |match| data[match[:tag]] = match[:value] }
+    end
+    @video_class.new(
+      id: data["yt:videoId"],
+      title: data["title"],
+      published: data["published"]
+    )
+  end
+end
+
+class Channel
+  attr_reader :video_list, :name, :id
+
+  def initialize(opts)
+    @id = opts[:id]
+    @name = opts[:name]
+    @video_list = opts[:video_list]
+  end
+end
+
+class Video
+  attr_reader :id, :published, :title, :description
+
+  def initialize(opts)
+    @id = opts[:id]
+    @title = opts[:title]
+    @description = opts[:description]
+    @published = opts[:published]
+  end
+end
+
+class XMLGetter
+  def initialize
+    # @feed = open({
+      # channel: "https://www.youtube.com/feeds/videos.xml?channel_id=#{id}",
+      # user: "https://www.youtube.com/feeds/videos.xml?user=#{id}"
+    # }[type])
   end
 end
 
@@ -46,7 +115,7 @@ class VideoDownloader
     puts "Last sync time: #{@last_sync_time}"
   end
 
-  def dl_videos(video_list)
+  def dl(video_list)
     video_list.each do |video|
       if video.published > @last_sync_time
         if check_video(video.id) == false
@@ -65,67 +134,6 @@ class VideoDownloader
 
   def add_to_db(id)
     File.open("dldb.txt", "a") { |file| file.write("#{id}\n") }
-  end
-end
-
-class VideoMaker
-  def initialize(opts)
-    @video_class = opts[:video_class]
-    @id_regex = Regexp.new("<yt:videoId>(?<id>.*)<\/yt:videoId>")
-    @time_regex = Regexp.new("<published>(?<published>.*)<\/published>")
-  end
-
-  def list(feed)
-    entry = false
-    id = nil
-    published = nil
-    video_list = []
-    feed.each_line do |line|
-      if entry
-        if line.include?("<yt:videoId>")
-          id = @id_regex.match(line)[:id]
-        end
-        if line.include?("<published>")
-          published = Time.parse(@time_regex.match(line)[:published])
-        end
-        if id and published
-          video_list << @video_class.new(id: id, published: published)
-          id = nil
-          published = nil
-        end
-      end
-      entry = true if line.strip == "<entry>"
-    end
-    video_list
-  end
-end
-
-class ChannelMaker
-  def initialize(opts)
-    @channel_class = opts[:channel_class]
-  end
-
-  def list(file)
-    File.readlines(file).map { |line| @channel_class.new(line: line) }
-  end
-end
-
-class Channel
-  def initialize(opts)
-    type, id = opts[:line].split("#")[0].split("/")
-    @feed = {
-      channel: "https://www.youtube.com/feeds/videos.xml?channel_id=#{id}",
-      user: "https://www.youtube.com/feeds/videos.xml?user=#{id}"
-    }[type]
-  end
-end
-
-class Video
-  attr_reader :id, :published
-
-  def initialize(opts)
-    @id = opts[:id]
-    @published = opts[:published]
   end
 end
 
