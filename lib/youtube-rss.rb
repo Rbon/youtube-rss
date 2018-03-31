@@ -141,4 +141,4 @@ class Video
   end
 end
 
-Main.new.run
+# Main.new.run
