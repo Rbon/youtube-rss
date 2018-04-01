@@ -1,5 +1,33 @@
 require "youtube-rss"
 
+describe FeedParser do
+  describe ".parse" do
+    before do
+      @feed = File.read("videos.xml")
+      @parsed_feed = FeedParser.parse(@feed)
+    end
+
+    it "returns a hash with channel info" do
+      channel_info = @parsed_feed[:channel_info]
+      expect(channel_info["name"]).to eql("jackisanerd")
+      expect(channel_info["yt:channelId"]).to eql("UCTjqo_3046IXFFGZ_M5jedA")
+    end
+
+    it "returns a hash with video info" do
+      video_entry = @parsed_feed[:video_info_list][0]
+      expect(video_entry["title"]).to eql("Day 4")
+      expect(video_entry["yt:videoId"]).to eql("Ah6xjqA0Cj0")
+      expect(video_entry["published"]).to eql("2018-03-03T05:59:29+00:00")
+    end
+  end
+end
+
+# describe ChannelFactory do
+  # describe "#for" do
+
+  # end
+# end
+
 describe Video do
   describe "#new?" do
     before(:all) do
@@ -43,6 +71,12 @@ describe Video do
     end
   end
 end
+
+# describe ChannelFactory do
+  # describe "for" do
+
+  # end
+# end
 
 describe Channel do
   describe "#sync_time" do

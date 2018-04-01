@@ -40,7 +40,7 @@ class YoutubeRss
   end
 end
 
-class FeedParser
+class OldFeedParser
   def initialize(channel_class: Channel, video_class: Video,
                  cache_file:, dl_path:)
     @channel_class = channel_class
@@ -58,7 +58,6 @@ class FeedParser
     url = url.split("#")[0].strip
     type, id = url.split("/")
     feed = open(@feed_types[type.to_sym] % id) { |io| data = io.read }
-    # feed = File.read(File.expand_path("~/.scripts/videos.xml"))
     feed = feed.split("<entry>")
     data = {}
     feed[0].lines do |line|
@@ -83,6 +82,27 @@ class FeedParser
     end
     published = Time.parse(data["published"])
     @video_class.new(info: data, channel: channel, dl_path: @dl_path)
+  end
+end
+
+class FeedParser
+  TAG_REGEX = /<(?<tag>.*)>(?<value>.*)<.*>/
+
+  def self.parse(feed)
+    feed = feed.split("<entry>")
+    channel_info = make_info(feed[0])
+    video_info_list = feed.drop(1).map { |entry| make_info(entry) }
+    {channel_info: channel_info, video_info_list: video_info_list}
+  end
+
+  private
+
+  def self.make_info(entry)
+    info = {}
+    entry.lines do |line|
+      TAG_REGEX.match(line) { |match| info[match[:tag]] = match[:value] }
+    end
+    info
   end
 end
 
@@ -131,13 +151,11 @@ class Video
 
   def new?
     @channel.sync_time < @published
-    # @published > Time.parse("2018-03-01")
   end
 
   def download
     Dir.chdir(File.expand_path(@dl_path)) { system("youtube-dl #{@id}") }
     @channel.sync_time = @published
-    # puts "fake downloading: #{@title}"
   end
 end
 
