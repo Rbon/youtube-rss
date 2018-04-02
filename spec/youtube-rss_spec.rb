@@ -143,12 +143,6 @@ describe Video do
   end
 end
 
-# describe ChannelFactory do
-  # describe "for" do
-
-  # end
-# end
-
 describe Channel do
   describe "#sync_time" do
     it "returns the time from the cache file" do
