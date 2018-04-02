@@ -22,11 +22,43 @@ describe FeedParser do
   end
 end
 
-# describe ChannelFactory do
-  # describe "#for" do
+describe ChannelFactory do
+  describe ".for" do
+    before do
+      channel_info = {"yt:channelId" => "test chanid", "name" => "test channel"}
+      video_info_list = [
+        {
+          "title" => "test video 1", "yt:videoId" => "test videoid 1",
+          "published" => "1999-01-01", "description" => "desc1"
+        },
+        {
+          "title" => "test video 2", "yt:videoId" => "test videoid 2",
+          "published" => "2008-01-01", "description" => "desc2"
+        }
+      ]
+      cache_file = double("Cache File")
+      dl_path = double("DL Path")
+      @channel = ChannelFactory.for(
+        channel_info: channel_info,
+        cache_file: cache_file,
+        video_info_list: video_info_list,
+        dl_path: dl_path
+      )
+    end
 
-  # end
-# end
+    it "returns a channel object" do
+      expect(@channel.name).to eql("test channel")
+      expect(@channel.id).to eql("test chanid")
+    end
+
+    it "returns a channel object with a list of videos" do
+      expect(@channel.video_list.length).to eql(2)
+      video = @channel.video_list[0]
+      expect(video.title).to eql("test video 1")
+      expect(video.id).to eql("test videoid 1")
+    end
+  end
+end
 
 describe Video do
   describe "#new?" do

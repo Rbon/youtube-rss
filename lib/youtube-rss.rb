@@ -85,6 +85,21 @@ class OldFeedParser
   end
 end
 
+class ChannelFactory
+  def self.for(channel_info:, video_info_list:, cache_file:, dl_path:)
+    channel = Channel.new(
+      id: channel_info["yt:channelId"],
+      name: channel_info["name"],
+      cache_file: cache_file
+    )
+    video_list = video_info_list.map { |video_info| Video.new(
+      info: video_info, channel: channel, dl_path: dl_path
+    ) }
+    channel.video_list = video_list
+    channel
+  end
+end
+
 class FeedParser
   TAG_REGEX = /<(?<tag>.*)>(?<value>.*)<.*>/
 
