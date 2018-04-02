@@ -1,5 +1,32 @@
 require "youtube-rss"
 
+describe Main do
+  describe "#run" do
+    before do
+      @channel_dbl = double("Channel")
+      @video_dbl = double("Video")
+    end
+
+    it "runs the script" do
+      expect(File).to receive(:readlines).and_return(["test"])
+      main = Main.new
+
+      expect(FeedDownloader).to receive(:download)
+      expect(FeedParser).to receive(:parse).
+        and_return({channel_info: nil, video_info_list: nil})
+      expect(ChannelFactory).to receive(:for).
+        and_return(@channel_dbl)
+      expect(@channel_dbl).to receive(:name).
+        and_return("test channel")
+      expect(@channel_dbl).to receive(:new_videos).
+        and_return([@video_dbl])
+      expect(@video_dbl).to receive(:download)
+      expect(main).to receive(:puts)
+      main.run
+    end
+  end
+end
+
 describe FeedDownloader do
   describe ".download" do
     it "returns a feed" do

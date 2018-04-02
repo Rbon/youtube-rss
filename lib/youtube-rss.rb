@@ -7,7 +7,7 @@ require "open-uri"
 require "time"
 require "json"
 
-class Main
+class OldMain
   def initialize
     @dl_path = ARGV[0] || "."
     @channel_list = File.readlines(File.expand_path("~/.config/youtube-rss/channel_list.txt"))
@@ -22,6 +22,28 @@ class Main
       channel_list: @channel_list,
       feed_parser: @feed_parser
     ).run
+  end
+end
+
+class Main
+  def initialize
+    @dl_path = ARGV[0] || "."
+    @channel_list = File.readlines(File.expand_path("~/.config/youtube-rss/channel_list.txt"))
+  end
+
+  def run
+    @channel_list.each do |line|
+      feed = FeedDownloader.download(line)
+      parsed_feed = FeedParser.parse(feed)
+      channel = ChannelFactory.for(
+        channel_info: parsed_feed[:channel_info],
+        video_info_list: parsed_feed[:video_info_list],
+        dl_path: @dl_path,
+        cache_file: File.expand_path("~/.config/youtube-rss/cache.json")
+      )
+      puts channel.name
+      channel.new_videos.each(&:download)
+    end
   end
 end
 
