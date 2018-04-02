@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <link rel="self" href="http://www.youtube.com/feeds/videos.xml?channel_id=UCTjqo_3046IXFFGZ_M5jedA"/>
+ <id>yt:channel:UCTjqo_3046IXFFGZ_M5jedA</id>
+ <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+ <title>jackisanerd</title>
+ <link rel="alternate" href="https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"/>
+ <author>
+  <name>jackisanerd</name>
+  <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+ </author>
+ <published>2011-04-20T07:27:32+00:00</published>
+ <entry>
+  <id>yt:video:Ah6xjqA0Cj0</id>
+  <yt:videoId>Ah6xjqA0Cj0</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>Day 4</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=Ah6xjqA0Cj0"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2018-03-03T05:59:29+00:00</published>
+  <updated>2018-03-03T19:57:10+00:00</updated>
+  <media:group>
+   <media:title>Day 4</media:title>
+   <media:content url="https://www.youtube.com/v/Ah6xjqA0Cj0?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/Ah6xjqA0Cj0/hqdefault.jpg" width="480" height="360"/>
+   <media:description>Not the best day but maybe tomorrow will be better</media:description>
+   <media:community>
+    <media:starRating count="12872" average="4.98" min="1" max="5"/>
+    <media:statistics views="116208"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:PAXWMUneU1A</id>
+  <yt:videoId>PAXWMUneU1A</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>Day 3</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=PAXWMUneU1A"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2018-03-02T04:19:57+00:00</published>
+  <updated>2018-03-03T19:57:08+00:00</updated>
+  <media:group>
+   <media:title>Day 3</media:title>
+   <media:content url="https://www.youtube.com/v/PAXWMUneU1A?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i1.ytimg.com/vi/PAXWMUneU1A/hqdefault.jpg" width="480" height="360"/>
+   <media:description>The paranoia starts to creep in</media:description>
+   <media:community>
+    <media:starRating count="16914" average="4.97" min="1" max="5"/>
+    <media:statistics views="178355"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:yY11jqhEyQQ</id>
+  <yt:videoId>yY11jqhEyQQ</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>Day 2</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=yY11jqhEyQQ"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2018-03-01T07:22:57+00:00</published>
+  <updated>2018-03-03T19:56:22+00:00</updated>
+  <media:group>
+   <media:title>Day 2</media:title>
+   <media:content url="https://www.youtube.com/v/yY11jqhEyQQ?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/yY11jqhEyQQ/hqdefault.jpg" width="480" height="360"/>
+   <media:description>oh no I'm going mad</media:description>
+   <media:community>
+    <media:starRating count="25803" average="4.98" min="1" max="5"/>
+    <media:statistics views="247462"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:ysahsboO7ag</id>
+  <yt:videoId>ysahsboO7ag</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>Day 1</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=ysahsboO7ag"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2018-02-28T04:11:59+00:00</published>
+  <updated>2018-03-03T19:56:05+00:00</updated>
+  <media:group>
+   <media:title>Day 1</media:title>
+   <media:content url="https://www.youtube.com/v/ysahsboO7ag?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/ysahsboO7ag/hqdefault.jpg" width="480" height="360"/>
+   <media:description>It REALLY begins now</media:description>
+   <media:community>
+    <media:starRating count="34436" average="4.97" min="1" max="5"/>
+    <media:statistics views="353553"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:jYrWDbpMyRY</id>
+  <yt:videoId>jYrWDbpMyRY</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>Day 0</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=jYrWDbpMyRY"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2018-02-27T06:41:07+00:00</published>
+  <updated>2018-03-03T19:56:20+00:00</updated>
+  <media:group>
+   <media:title>Day 0</media:title>
+   <media:content url="https://www.youtube.com/v/jYrWDbpMyRY?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i3.ytimg.com/vi/jYrWDbpMyRY/hqdefault.jpg" width="480" height="360"/>
+   <media:description>Here we go</media:description>
+   <media:community>
+    <media:starRating count="43935" average="4.95" min="1" max="5"/>
+    <media:statistics views="462505"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:or7XF0o_D5Y</id>
+  <yt:videoId>or7XF0o_D5Y</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>White Girl Rants about Her Wedding Dress for Way Too Long</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=or7XF0o_D5Y"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2018-02-22T19:38:26+00:00</published>
+  <updated>2018-03-03T19:54:42+00:00</updated>
+  <media:group>
+   <media:title>White Girl Rants about Her Wedding Dress for Way Too Long</media:title>
+   <media:content url="https://www.youtube.com/v/or7XF0o_D5Y?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i4.ytimg.com/vi/or7XF0o_D5Y/hqdefault.jpg" width="480" height="360"/>
+   <media:description>See the much more watchable version: https://www.youtube.com/watch?v=j4SG4LqwaMk</media:description>
+   <media:community>
+    <media:starRating count="31194" average="4.98" min="1" max="5"/>
+    <media:statistics views="322539"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:lAVqY6a1NGs</id>
+  <yt:videoId>lAVqY6a1NGs</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>hey guys</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=lAVqY6a1NGs"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2018-01-09T16:29:29+00:00</published>
+  <updated>2018-03-03T18:55:55+00:00</updated>
+  <media:group>
+   <media:title>hey guys</media:title>
+   <media:content url="https://www.youtube.com/v/lAVqY6a1NGs?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i1.ytimg.com/vi/lAVqY6a1NGs/hqdefault.jpg" width="480" height="360"/>
+   <media:description></media:description>
+   <media:community>
+    <media:starRating count="15985" average="4.97" min="1" max="5"/>
+    <media:statistics views="181671"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:EGgUNlrVhZM</id>
+  <yt:videoId>EGgUNlrVhZM</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>Game of Thrones rap</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=EGgUNlrVhZM"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2017-08-17T18:55:05+00:00</published>
+  <updated>2018-03-03T19:54:51+00:00</updated>
+  <media:group>
+   <media:title>Game of Thrones rap</media:title>
+   <media:content url="https://www.youtube.com/v/EGgUNlrVhZM?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/EGgUNlrVhZM/hqdefault.jpg" width="480" height="360"/>
+   <media:description>From &quot;Fix Your Twitter Bios 6&quot; ► https://www.youtube.com/watch?v=rNYmzSvqfk4
+TWITTER ► http://www.twitter.com/jacksfilms
+MERCH ► https://shop.crowdmade.com/collections/jacksfilms
+LIVE CHAT ► http://www.younow.com/jacksfilms
+SNAPCHAT ► realjacksfilms
+FACEBOOK ► http://www.facebook.com/jacksfilmsfans</media:description>
+   <media:community>
+    <media:starRating count="15116" average="4.97" min="1" max="5"/>
+    <media:statistics views="197936"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:5E811eiD1IE</id>
+  <yt:videoId>5E811eiD1IE</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>Song from &quot;RIP FIDGET SPINNERS&quot; on loop for like 3 minutes</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=5E811eiD1IE"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2017-06-05T17:54:25+00:00</published>
+  <updated>2018-03-03T19:57:12+00:00</updated>
+  <media:group>
+   <media:title>Song from &quot;RIP FIDGET SPINNERS&quot; on loop for like 3 minutes</media:title>
+   <media:content url="https://www.youtube.com/v/5E811eiD1IE?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/5E811eiD1IE/hqdefault.jpg" width="480" height="360"/>
+   <media:description>From this vid ► https://www.youtube.com/watch?v=hboNl_epgzA</media:description>
+   <media:community>
+    <media:starRating count="10539" average="4.73" min="1" max="5"/>
+    <media:statistics views="262544"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:OyvMm53Aa-w</id>
+  <yt:videoId>OyvMm53Aa-w</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>[INSTRUMENTAL] We're all just assholes talking to a camera</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=OyvMm53Aa-w"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2017-06-03T23:51:11+00:00</published>
+  <updated>2018-03-03T18:32:07+00:00</updated>
+  <media:group>
+   <media:title>[INSTRUMENTAL] We're all just assholes talking to a camera</media:title>
+   <media:content url="https://www.youtube.com/v/OyvMm53Aa-w?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i4.ytimg.com/vi/OyvMm53Aa-w/hqdefault.jpg" width="480" height="360"/>
+   <media:description>Full song ► https://www.youtube.com/watch?v=on2duCFAJ7Q</media:description>
+   <media:community>
+    <media:starRating count="8503" average="4.97" min="1" max="5"/>
+    <media:statistics views="142665"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:b6BSIgJ00pw</id>
+  <yt:videoId>b6BSIgJ00pw</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>White Girl Raps &quot;Hamilton&quot; for Way Too Long (uncut)</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=b6BSIgJ00pw"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2017-02-15T21:24:42+00:00</published>
+  <updated>2018-03-03T19:52:00+00:00</updated>
+  <media:group>
+   <media:title>White Girl Raps &quot;Hamilton&quot; for Way Too Long (uncut)</media:title>
+   <media:content url="https://www.youtube.com/v/b6BSIgJ00pw?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i3.ytimg.com/vi/b6BSIgJ00pw/hqdefault.jpg" width="480" height="360"/>
+   <media:description>See the much more watchable version: https://www.youtube.com/watch?v=FC-FmKoBfT0</media:description>
+   <media:community>
+    <media:starRating count="78224" average="4.94" min="1" max="5"/>
+    <media:statistics views="1313799"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:tzvQiO50QhI</id>
+  <yt:videoId>tzvQiO50QhI</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>hey guys</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=tzvQiO50QhI"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2017-02-05T00:21:25+00:00</published>
+  <updated>2018-03-03T19:38:41+00:00</updated>
+  <media:group>
+   <media:title>hey guys</media:title>
+   <media:content url="https://www.youtube.com/v/tzvQiO50QhI?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i1.ytimg.com/vi/tzvQiO50QhI/hqdefault.jpg" width="480" height="360"/>
+   <media:description></media:description>
+   <media:community>
+    <media:starRating count="10789" average="4.96" min="1" max="5"/>
+    <media:statistics views="208585"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:Yvbdk2b4RfA</id>
+  <yt:videoId>Yvbdk2b4RfA</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>YIAY question! Need your help!</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=Yvbdk2b4RfA"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2017-01-13T21:50:31+00:00</published>
+  <updated>2018-03-03T18:57:13+00:00</updated>
+  <media:group>
+   <media:title>YIAY question! Need your help!</media:title>
+   <media:content url="https://www.youtube.com/v/Yvbdk2b4RfA?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/Yvbdk2b4RfA/hqdefault.jpg" width="480" height="360"/>
+   <media:description></media:description>
+   <media:community>
+    <media:starRating count="7605" average="4.97" min="1" max="5"/>
+    <media:statistics views="137642"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:oKhpDv7GpTM</id>
+  <yt:videoId>oKhpDv7GpTM</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>hey guys</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=oKhpDv7GpTM"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2017-01-04T23:38:19+00:00</published>
+  <updated>2018-03-03T19:30:44+00:00</updated>
+  <media:group>
+   <media:title>hey guys</media:title>
+   <media:content url="https://www.youtube.com/v/oKhpDv7GpTM?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i4.ytimg.com/vi/oKhpDv7GpTM/hqdefault.jpg" width="480" height="360"/>
+   <media:description></media:description>
+   <media:community>
+    <media:starRating count="8987" average="4.92" min="1" max="5"/>
+    <media:statistics views="165349"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:rsIHQ2N4s0w</id>
+  <yt:videoId>rsIHQ2N4s0w</yt:videoId>
+  <yt:channelId>UCTjqo_3046IXFFGZ_M5jedA</yt:channelId>
+  <title>hey guys</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=rsIHQ2N4s0w"/>
+  <author>
+   <name>jackisanerd</name>
+   <uri>https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA</uri>
+  </author>
+  <published>2017-01-01T19:44:56+00:00</published>
+  <updated>2018-03-03T16:23:57+00:00</updated>
+  <media:group>
+   <media:title>hey guys</media:title>
+   <media:content url="https://www.youtube.com/v/rsIHQ2N4s0w?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i3.ytimg.com/vi/rsIHQ2N4s0w/hqdefault.jpg" width="480" height="360"/>
+   <media:description></media:description>
+   <media:community>
+    <media:starRating count="9079" average="4.94" min="1" max="5"/>
+    <media:statistics views="151741"/>
+   </media:community>
+  </media:group>
+ </entry>
+</feed>
