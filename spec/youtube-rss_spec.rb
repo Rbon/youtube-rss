@@ -1,9 +1,21 @@
 require "youtube-rss"
 
+describe FeedDownloader do
+  describe ".download" do
+    it "returns a feed" do
+      url = "channel/test_id"
+      fake_page = File.read("spec/fixtures/files/videos.xml")
+      expect(FeedDownloader).to receive(:open).and_return(fake_page)
+      feed = FeedDownloader.download(url)
+      expect(feed).to eql(fake_page)
+    end
+  end
+end
+
 describe FeedParser do
   describe ".parse" do
     before do
-      @feed = File.read("videos.xml")
+      @feed = File.read("spec/fixtures/files/videos.xml")
       @parsed_feed = FeedParser.parse(@feed)
     end
 
@@ -28,12 +40,12 @@ describe ChannelFactory do
       channel_info = {"yt:channelId" => "test chanid", "name" => "test channel"}
       video_info_list = [
         {
-          "title" => "test video 1", "yt:videoId" => "test videoid 1",
-          "published" => "1999-01-01", "description" => "desc1"
+          "title" => "test video 2", "yt:videoId" => "test videoid 2",
+          "published" => "2008-01-01", "description" => "desc1"
         },
         {
-          "title" => "test video 2", "yt:videoId" => "test videoid 2",
-          "published" => "2008-01-01", "description" => "desc2"
+          "title" => "test video 1", "yt:videoId" => "test videoid 1",
+          "published" => "1999-01-01", "description" => "desc2"
         }
       ]
       cache_file = double("Cache File")

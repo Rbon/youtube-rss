@@ -40,48 +40,17 @@ class YoutubeRss
   end
 end
 
-class OldFeedParser
-  def initialize(channel_class: Channel, video_class: Video,
-                 cache_file:, dl_path:)
-    @channel_class = channel_class
-    @video_class = video_class
-    @tag_regex = /<(?<tag>.*)>(?<value>.*)<.*>/
-    @dl_path = dl_path
-    @cache_file = cache_file
-    @feed_types = {
+class FeedDownloader
+    FEED_TYPES = {
       channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
       user: "https://www.youtube.com/feeds/videos.xml?user=%s"
     }
-  end
 
-  def channel(url)
+  def self.download(url)
     url = url.split("#")[0].strip
     type, id = url.split("/")
-    feed = open(@feed_types[type.to_sym] % id) { |io| data = io.read }
-    feed = feed.split("<entry>")
-    data = {}
-    feed[0].lines do |line|
-      @tag_regex.match(line) { |match| data[match[:tag]] = match[:value] }
-    end
-    chan = @channel_class.new(
-      id: data["yt:channelId"],
-      name: data["name"],
-      cache_file: @cache_file
-    )
-    video_list = feed.drop(1).map { |entry| video(entry, chan) }
-    chan.video_list = video_list.reverse
-    chan
-  end
-
-  private
-
-  def video(info, channel)
-    data = {}
-    info.lines do |line|
-      @tag_regex.match(line) { |match| data[match[:tag]] = match[:value] }
-    end
-    published = Time.parse(data["published"])
-    @video_class.new(info: data, channel: channel, dl_path: @dl_path)
+    feed = open(FEED_TYPES[type.to_sym] % id) { |io| io.read }
+    feed
   end
 end
 
@@ -95,7 +64,7 @@ class ChannelFactory
     video_list = video_info_list.map { |video_info| Video.new(
       info: video_info, channel: channel, dl_path: dl_path
     ) }
-    channel.video_list = video_list
+    channel.video_list = video_list.reverse
     channel
   end
 end
