@@ -132,4 +132,17 @@ class Video
   end
 end
 
+class Cache
+  CACHE_FILENAME = File.expand_path("~/.config/youtube-rss/cache.json")
+
+  def self.update(time:, channel_name:)
+    cache = File.read(CACHE_FILENAME)
+    cache = JSON.parse(cache)
+    cache[channel_name] = time
+    file = File.open(CACHE_FILENAME, "w")
+    JSON.dump(cache, file)
+    file.close
+  end
+end
+
 # Main.new.run

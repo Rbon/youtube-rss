@@ -188,3 +188,23 @@ describe Channel do
     end
   end
 end
+
+describe Cache do
+  describe ".update" do
+    context "when the channel name doesn't already exist in cache"
+    it "updates the cache file" do
+      time = "some time"
+      channel_name = "test channel"
+      fake_json = "\"foo\": \"1\", \"bar\": \"2\""
+      fake_parsed_json = {"foo" => "1", "bar" => "2", channel_name => time}
+      expect(File).to receive(:read).and_return("{#{fake_json}}")
+      expect(JSON).to receive(:dump).
+        with(fake_parsed_json, anything)
+      Cache.update(time: time, channel_name: channel_name)
+    end
+
+    context "when the channel name already exists in the cache" do
+
+    end
+  end
+end
