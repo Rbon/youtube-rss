@@ -7,6 +7,7 @@ describe Main do
       @video_dbl = double("Video")
     end
 
+    # this should be much better
     it "runs the script" do
       expect(File).to receive(:readlines).and_return(["test"])
       main = Main.new
