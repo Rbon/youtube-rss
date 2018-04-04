@@ -29,12 +29,29 @@ end
 
 describe FeedDownloader do
   describe ".download" do
-    it "returns a feed" do
-      url = "channel/test_id"
-      fake_page = File.read("spec/fixtures/files/videos.xml")
-      expect(FeedDownloader).to receive(:open).and_return(fake_page)
-      feed = FeedDownloader.download(url)
-      expect(feed).to eql(fake_page)
+    before do
+      @id = "test_id"
+      @fake_page = File.read("spec/fixtures/files/videos.xml")
+    end
+
+    context "with the old channel name type" do
+      it "returns a proper feed url" do
+        url = "user/#{@id}"
+        expect(FeedDownloader).to receive(:open).
+          with("https://www.youtube.com/feeds/videos.xml?user=#{@id}").
+          and_return(@fake_page)
+        expect(FeedDownloader.download(url)).to eql(@fake_page)
+      end
+    end
+
+    context "returns a proper feed url" do
+      it "returns a feed" do
+        url = "channel/#{@id}"
+        expect(FeedDownloader).to receive(:open).
+          with("https://www.youtube.com/feeds/videos.xml?channel_id=#{@id}").
+          and_return(@fake_page)
+        expect(FeedDownloader.download(url)).to eql(@fake_page)
+      end
     end
   end
 end
