@@ -145,17 +145,19 @@ describe Video do
   end
 
   describe "#download" do
-    it "runs the execer" do
+    it "downloads a video" do
+      id = "testid"
       pub_time = "2017-03-01"
-      info = {"yt:videoId" => "testid", "published" => pub_time}
+      info = {"yt:videoId" => id, "published" => pub_time}
       channel_dbl = double("Channel")
-      expect(Dir).to receive(:chdir)
-      dl_path = "test path"
+      dl_path = "/home/"
       video = Video.new(
         info: info,
         channel: channel_dbl,
         dl_path: dl_path)
-      expect(channel_dbl).to receive(:sync_time=)
+      expect(video).to receive(:system).
+        with("youtube-dl #{id}")
+      allow(channel_dbl).to receive(:sync_time=)
       video.download
     end
   end
