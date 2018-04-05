@@ -143,4 +143,14 @@ class Cache
   end
 end
 
+class Downloader
+  def initialize
+    @dl_path = ARGV[0] || "."
+  end
+
+  def run(id:)
+    Dir.chdir(File.expand_path(@dl_path)) { system("youtube-dl #{id}") }
+  end
+end
+
 # Main.new.run

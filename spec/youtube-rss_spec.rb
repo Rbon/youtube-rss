@@ -216,3 +216,15 @@ describe Cache do
     end
   end
 end
+
+describe Downloader do
+  describe ".run" do
+    it "downloads the video" do
+      id = "testid"
+      downloader = Downloader.new
+      expect(downloader).to receive(:system).
+        with("youtube-dl #{id}")
+      downloader.run(id: id)
+    end
+  end
+end
