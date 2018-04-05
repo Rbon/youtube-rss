@@ -157,29 +157,6 @@ describe Video do
 end
 
 describe Channel do
-  describe "#sync_time" do
-    it "returns the time from the cache file" do
-      fake_cache = '{"test channel":"2000-01-01 00:00:00 -0800"}'
-      expect(File).to receive(:read).and_return(fake_cache)
-      channel = Channel.new(id: "testid", name: "test channel", video_list: "")
-      expect(channel.sync_time.to_s).to eql("2000-01-01 00:00:00 -0800")
-    end
-  end
-
-  describe "#sync_time=" do
-    it "updates the cache file" do
-      fake_cache = '{"test channel":"2000-01-01 00:00:00 -0800"}'
-      cache_dbl = double("Cache")
-      time = "a time"
-      expect(File).to receive(:read).and_return(fake_cache)
-      expect(File).to receive(:open).and_return(cache_dbl)
-      expect(JSON).to receive(:dump).with(
-        {"test channel" => "a time"}, cache_dbl)
-      expect(cache_dbl).to receive(:close)
-      channel = Channel.new(id: "testid", name: "test channel", video_list: "")
-      channel.sync_time = time
-    end
-  end
 end
 
 describe Cache do

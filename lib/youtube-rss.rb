@@ -78,21 +78,6 @@ class Channel
     @video_list = video_list
   end
 
-  def sync_time=(time)
-    cache = File.read(@cache_file)
-    cache = JSON.parse(cache)
-    cache[@name] = time
-    file = File.open(@cache_file, "w")
-    JSON.dump(cache, file)
-    file.close
-  end
-
-  def sync_time
-    time = File.read(@cache_file)
-    time = JSON.parse(time)[@name]
-    Time.parse(time || "2018-03-01")
-  end
-
   def new_videos
     @video_list.select(&:new?)
   end
