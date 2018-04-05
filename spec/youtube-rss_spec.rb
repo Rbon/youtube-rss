@@ -218,11 +218,11 @@ describe Cache do
   end
 end
 
-describe Downloader do
+describe VideoDownloader do
   describe ".run" do
     it "downloads the video" do
       id = "testid"
-      downloader = Downloader.new
+      downloader = VideoDownloader.new
       expect(downloader).to receive(:system).
         with("youtube-dl #{id}")
       downloader.run(id: id)

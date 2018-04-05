@@ -105,7 +105,7 @@ end
 class Video
   attr_reader :id, :published, :title, :description
 
-  def initialize(info:, channel_name:, downloader: Downloader)
+  def initialize(info:, channel_name:, downloader: VideoDownloader)
     @id = info["yt:videoId"]
     @title = info["title"]
     @description = info["description"]
@@ -143,7 +143,7 @@ class Cache
   end
 end
 
-class Downloader
+class VideoDownloader
   def initialize
     @dl_path = ARGV[0] || "."
   end
