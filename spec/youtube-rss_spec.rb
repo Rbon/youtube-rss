@@ -143,13 +143,14 @@ describe Video do
       id = "testid"
       pub_time = "2017-03-01"
       info = {"yt:videoId" => id, "published" => pub_time}
-      dl_path = "/home/"
+      downloader_dbl = double("Downloader")
       expect(Cache).to receive(:update)
       video = Video.new(
         info: info,
-        channel_name: nil)
-      expect(video).to receive(:system).
-        with("youtube-dl #{id}")
+        channel_name: nil,
+        downloader: downloader_dbl)
+      expect(downloader_dbl).to receive(:run).
+        with(id: id)
       video.download
     end
   end

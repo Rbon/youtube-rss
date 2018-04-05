@@ -105,13 +105,13 @@ end
 class Video
   attr_reader :id, :published, :title, :description
 
-  def initialize(info:, channel_name:)
+  def initialize(info:, channel_name:, downloader: Downloader)
     @id = info["yt:videoId"]
     @title = info["title"]
     @description = info["description"]
     @published = Time.parse(info["published"])
     @channel_name = channel_name
-    @dl_path = ARGV[0] || "."
+    @downloader = downloader
   end
 
   def new?
@@ -119,7 +119,7 @@ class Video
   end
 
   def download
-    Dir.chdir(File.expand_path(@dl_path)) { system("youtube-dl #{@id}") }
+    @downloader.run(id: @id)
     Cache.update(time: @published, channel_name: @channel_name)
   end
 end
