@@ -20,9 +20,7 @@ class Main
       channel = ChannelFactory.for(
         channel_info: parsed_feed[:channel_info],
         video_info_list: parsed_feed[:video_info_list],
-        dl_path: @dl_path,
-        cache_file: File.expand_path("~/.config/youtube-rss/cache.json")
-      )
+        dl_path: @dl_path)
       puts channel.name
       channel.new_videos.each(&:download)
     end
@@ -44,16 +42,16 @@ class FeedDownloader
 end
 
 class ChannelFactory
-  def self.for(channel_info:, video_info_list:, cache_file:, dl_path:)
+  def self.for(channel_info:, video_info_list:, dl_path:)
+    video_list = video_info_list.map { |video_info| Video.new(
+      info: video_info,
+      channel_name: channel_info["name"],
+      dl_path: dl_path) }
+    video_list = video_list.reverse
     channel = Channel.new(
       id: channel_info["yt:channelId"],
       name: channel_info["name"],
-      cache_file: cache_file
-    )
-    video_list = video_info_list.map { |video_info| Video.new(
-      info: video_info, channel: channel, dl_path: dl_path
-    ) }
-    channel.video_list = video_list.reverse
+      video_list: video_list)
     channel
   end
 end
@@ -80,14 +78,12 @@ class FeedParser
 end
 
 class Channel
-  attr_reader :name, :id
-  attr_accessor :video_list
+  attr_reader :name, :id, :video_list
 
-  def initialize(id:, name:, cache_file:)
+  def initialize(id:, name:, video_list:)
     @id = id
     @name = name
-    @video_list = []
-    @cache_file = cache_file
+    @video_list = video_list
   end
 
   def sync_time=(time)
@@ -113,22 +109,22 @@ end
 class Video
   attr_reader :id, :published, :title, :description
 
-  def initialize(info:, channel:, dl_path:)
+  def initialize(info:, channel_name:, dl_path:)
     @id = info["yt:videoId"]
     @title = info["title"]
     @description = info["description"]
     @published = Time.parse(info["published"])
-    @channel = channel
+    @channel_name = channel_name
     @dl_path = dl_path
   end
 
   def new?
-    @channel.sync_time < @published
+    Cache.new?(time: @published, channel_name: @channel_name)
   end
 
   def download
     Dir.chdir(File.expand_path(@dl_path)) { system("youtube-dl #{@id}") }
-    @channel.sync_time = @published
+    Cache.update(time: @published, channel_name: @channel_name)
   end
 end
 
@@ -142,6 +138,18 @@ class Cache
     file = File.open(CACHE_FILENAME, "w")
     JSON.dump(cache, file)
     file.close
+  end
+
+  def self.new?(time:, channel_name:)
+    time > sync_time(channel_name: channel_name)
+  end
+
+  private
+
+  def self.sync_time(channel_name:)
+    time = File.read(CACHE_FILENAME)
+    time = JSON.parse(time)[channel_name]
+    Time.parse(time || "2018-03-01")
   end
 end
 

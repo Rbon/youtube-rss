@@ -97,7 +97,6 @@ describe ChannelFactory do
       dl_path = double("DL Path")
       @channel = ChannelFactory.for(
         channel_info: channel_info,
-        cache_file: cache_file,
         video_info_list: video_info_list,
         dl_path: dl_path
       )
@@ -126,9 +125,8 @@ describe Video do
     context "when video is new" do
       it "returns true" do
         @info["published"] = "2000-01-01"
-        channel_dbl = double("Channel")
-        video = Video.new(info: @info, channel: channel_dbl, dl_path: "")
-        expect(channel_dbl).to receive(:sync_time) { Time.parse("1999-01-01") }
+        video = Video.new(info: @info, channel_name: "", dl_path: "")
+        expect(Cache).to receive(:sync_time) { Time.parse("1999-01-01") }
         expect(video.new?).to be true
       end
     end
@@ -136,9 +134,8 @@ describe Video do
     context "when video is old" do
       it "returns false" do
         @info["published"] = "1999-01-01"
-        channel_dbl = double("Channel")
-        video = Video.new(info: @info, channel: channel_dbl, dl_path: "")
-        expect(channel_dbl).to receive(:sync_time) { Time.parse("2000-01-01") }
+        video = Video.new(info: @info, channel_name: "", dl_path: "")
+        expect(Cache).to receive(:sync_time) { Time.parse("2000-01-01") }
         expect(video.new?).to be false
       end
     end
@@ -149,15 +146,14 @@ describe Video do
       id = "testid"
       pub_time = "2017-03-01"
       info = {"yt:videoId" => id, "published" => pub_time}
-      channel_dbl = double("Channel")
       dl_path = "/home/"
+      expect(Cache).to receive(:update)
       video = Video.new(
         info: info,
-        channel: channel_dbl,
+        channel_name: nil,
         dl_path: dl_path)
       expect(video).to receive(:system).
         with("youtube-dl #{id}")
-      allow(channel_dbl).to receive(:sync_time=)
       video.download
     end
   end
@@ -168,7 +164,7 @@ describe Channel do
     it "returns the time from the cache file" do
       fake_cache = '{"test channel":"2000-01-01 00:00:00 -0800"}'
       expect(File).to receive(:read).and_return(fake_cache)
-      channel = Channel.new(id: "testid", name: "test channel", cache_file: "")
+      channel = Channel.new(id: "testid", name: "test channel", video_list: "")
       expect(channel.sync_time.to_s).to eql("2000-01-01 00:00:00 -0800")
     end
   end
@@ -183,7 +179,7 @@ describe Channel do
       expect(JSON).to receive(:dump).with(
         {"test channel" => "a time"}, cache_dbl)
       expect(cache_dbl).to receive(:close)
-      channel = Channel.new(id: "testid", name: "test channel", cache_file: "")
+      channel = Channel.new(id: "testid", name: "test channel", video_list: "")
       channel.sync_time = time
     end
   end
@@ -210,17 +206,17 @@ describe Cache do
     end
 
     context "when the channel name already exists in the cache" do
-    it "updates the cache file" do
-      fake_json = "\"foo\": \"1\", \"#{@channel_name}\": \"#{@time}\""
-      fake_parsed_json = {"foo" => "1", @channel_name => @time}
-      expect(File).to receive(:read).and_return("{#{fake_json}}")
-      file_dbl = double("File")
-      expect(file_dbl).to receive(:close)
-      expect(File).to receive(:open).and_return(file_dbl)
-      expect(JSON).to receive(:dump).
-        with(fake_parsed_json, anything)
-      Cache.update(time: @time, channel_name: @channel_name)
-    end
+      it "updates the cache file" do
+        fake_json = "\"foo\": \"1\", \"#{@channel_name}\": \"#{@time}\""
+        fake_parsed_json = {"foo" => "1", @channel_name => @time}
+        expect(File).to receive(:read).and_return("{#{fake_json}}")
+        file_dbl = double("File")
+        expect(file_dbl).to receive(:close)
+        expect(File).to receive(:open).and_return(file_dbl)
+        expect(JSON).to receive(:dump).
+          with(fake_parsed_json, anything)
+        Cache.update(time: @time, channel_name: @channel_name)
+      end
     end
   end
 end
