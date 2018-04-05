@@ -45,7 +45,6 @@ class ChannelFactory
       id: channel_info["yt:channelId"],
       name: channel_info["name"],
       video_list: video_list)
-    channel
   end
 end
 
