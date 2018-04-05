@@ -3,10 +3,11 @@
 ###BUGS: If youtube-dl isn't present, the script thinks everything is fine, and
 ###      updates the sync dates.
 
-require "open-uri"
+require "net/http"
 require "time"
 require "json"
 
+# Runs the script
 class Main
   def initialize
     @dl_path = ARGV[0] || "."
@@ -23,24 +24,26 @@ class Main
   end
 end
 
+# Downloads an xml feed of a channel, given a string
 class FeedDownloader
     FEED_TYPES = {
-      channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
-      user: "https://www.youtube.com/feeds/videos.xml?user=%s"}
+      channel: "/feeds/videos.xml?channel_id=%s",
+      user: "/feeds/videos.xml?user=%s"}
 
   def self.download(url)
     url = url.split("#")[0].strip
     type, id = url.split("/")
-    feed = open(FEED_TYPES[type.to_sym] % id) { |io| io.read }
-    feed
+    Net::HTTP.get("youtube.com", FEED_TYPES[type.to_sym] % id)
   end
 end
 
+# Makes a Channel class
 class ChannelFactory
   def self.for(channel_info:, video_info_list:)
-    video_list = video_info_list.reverse.map { |video_info| Video.new(
-      info: video_info,
-      channel_name: channel_info["name"]) }
+    video_list = video_info_list.reverse.map { |video_info|
+      Video.new(
+        info: video_info,
+        channel_name: channel_info["name"]) }
     Channel.new(
       id: channel_info["yt:channelId"],
       name: channel_info["name"],
@@ -48,6 +51,7 @@ class ChannelFactory
   end
 end
 
+# Lazily parses xml files into the relevant info
 class FeedParser
   TAG_REGEX = /<(?<tag>.*)>(?<value>.*)<.*>/
 
@@ -69,6 +73,7 @@ class FeedParser
   end
 end
 
+# An object which contains channel info, and a list of video objects
 class Channel
   attr_reader :name, :id, :video_list
 
@@ -83,6 +88,7 @@ class Channel
   end
 end
 
+# An object which contains video info, and some methods related to downloading
 class Video
   attr_reader :id, :published, :title, :description
 
@@ -105,6 +111,8 @@ class Video
   end
 end
 
+# A class which represents the cache file used for this script.
+# Contains methods for reading and writing to the cache file.
 class Cache
   CACHE_FILENAME = File.expand_path("~/.config/youtube-rss/cache.json")
 
@@ -124,6 +132,7 @@ class Cache
   end
 end
 
+# An object which runs youtube-dl
 class VideoDownloader
   def initialize
     @dl_path = ARGV[0] || "."

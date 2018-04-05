@@ -38,20 +38,22 @@ describe FeedDownloader do
     context "with the old channel name type" do
       it "returns a proper feed url" do
         url = "user/#{@id}"
-        expect(FeedDownloader).to receive(:open).
-          with("https://www.youtube.com/feeds/videos.xml?user=#{@id}").
+        expect(Net::HTTP).to receive(:get).
+          with("youtube.com", "/feeds/videos.xml?user=#{@id}").
           and_return(@fake_page)
-        expect(FeedDownloader.download(url)).to eql(@fake_page)
+        page = FeedDownloader.download(url)
+        expect(page).to eql(@fake_page)
       end
     end
 
-    context "returns a proper feed url" do
+    context "with the new channel id type" do
       it "returns a feed" do
         url = "channel/#{@id}"
-        expect(FeedDownloader).to receive(:open).
-          with("https://www.youtube.com/feeds/videos.xml?channel_id=#{@id}").
+        expect(Net::HTTP).to receive(:get).
+          with("youtube.com", "/feeds/videos.xml?channel_id=#{@id}").
           and_return(@fake_page)
-        expect(FeedDownloader.download(url)).to eql(@fake_page)
+        page = FeedDownloader.download(url)
+        expect(page).to eql(@fake_page)
       end
     end
   end
