@@ -41,7 +41,7 @@ class ChannelFactory
     video_list = video_info_list.reverse.map { |video_info| Video.new(
       info: video_info,
       channel_name: channel_info["name"]) }
-    channel = Channel.new(
+    Channel.new(
       id: channel_info["yt:channelId"],
       name: channel_info["name"],
       video_list: video_list)
@@ -58,7 +58,7 @@ class FeedParser
     {channel_info: channel_info, video_info_list: video_info_list}
   end
 
-  private
+  private_class_method
 
   def self.make_info(entry)
     info = {}
