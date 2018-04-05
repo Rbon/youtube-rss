@@ -1,7 +1,7 @@
 #! /usr/bin/env ruby
 
-###BUGS: If youtube-dl isn't present, the script thinks everything is fine, and
-###      updates the sync dates.
+### BUGS: If youtube-dl isn't present, the script thinks everything is fine, and
+###       updates the sync dates.
 
 require "net/http"
 require "time"
@@ -11,7 +11,8 @@ require "json"
 class Main
   def initialize
     @dl_path = ARGV[0] || "."
-    @channel_list = File.readlines(File.expand_path("~/.config/youtube-rss/channel_list.txt"))
+    @channel_list = File.readlines(
+      File.expand_path("~/.config/youtube-rss/channel_list.txt"))
   end
 
   def run
@@ -26,9 +27,9 @@ end
 
 # Downloads an xml feed of a channel, given a string
 class FeedDownloader
-    FEED_TYPES = {
-      channel: "/feeds/videos.xml?channel_id=%s",
-      user: "/feeds/videos.xml?user=%s"}
+  FEED_TYPES = {
+    channel: "/feeds/videos.xml?channel_id=%s",
+    user: "/feeds/videos.xml?user=%s"}.freeze
 
   def self.download(url)
     url = url.split("#")[0].strip
@@ -40,10 +41,11 @@ end
 # Makes a Channel class
 class ChannelFactory
   def self.for(channel_info:, video_info_list:)
-    video_list = video_info_list.reverse.map { |video_info|
+    video_list = video_info_list.reverse.map do |video_info|
       Video.new(
         info: video_info,
-        channel_name: channel_info["name"]) }
+        channel_name: channel_info["name"])
+    end
     Channel.new(
       id: channel_info["yt:channelId"],
       name: channel_info["name"],
