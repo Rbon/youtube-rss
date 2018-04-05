@@ -15,11 +15,8 @@ class Main
 
   def run
     @channel_list.each do |line|
-      feed = FeedDownloader.download(line)
-      parsed_feed = FeedParser.parse(feed)
       channel = ChannelFactory.for(
-        channel_info: parsed_feed[:channel_info],
-        video_info_list: parsed_feed[:video_info_list])
+        FeedParser.parse(FeedDownloader.download(line)))
       puts channel.name
       channel.new_videos.each(&:download)
     end
