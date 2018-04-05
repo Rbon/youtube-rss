@@ -42,11 +42,10 @@ end
 
 class ChannelFactory
   def self.for(channel_info:, video_info_list:, dl_path:)
-    video_list = video_info_list.map { |video_info| Video.new(
+    video_list = video_info_list.reverse.map { |video_info| Video.new(
       info: video_info,
       channel_name: channel_info["name"],
       dl_path: dl_path) }
-    video_list = video_list.reverse
     channel = Channel.new(
       id: channel_info["yt:channelId"],
       name: channel_info["name"],
