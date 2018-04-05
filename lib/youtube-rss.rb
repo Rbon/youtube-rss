@@ -30,8 +30,7 @@ end
 class FeedDownloader
     FEED_TYPES = {
       channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
-      user: "https://www.youtube.com/feeds/videos.xml?user=%s"
-    }
+      user: "https://www.youtube.com/feeds/videos.xml?user=%s"}
 
   def self.download(url)
     url = url.split("#")[0].strip
@@ -119,7 +118,7 @@ class Video
   end
 
   def new?
-    Cache.new?(time: @published, channel_name: @channel_name)
+    @published > Cache.sync_time(channel_name: @channel_name)
   end
 
   def download
@@ -139,12 +138,6 @@ class Cache
     JSON.dump(cache, file)
     file.close
   end
-
-  def self.new?(time:, channel_name:)
-    time > sync_time(channel_name: channel_name)
-  end
-
-  private
 
   def self.sync_time(channel_name:)
     time = File.read(CACHE_FILENAME)
