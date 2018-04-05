@@ -94,12 +94,9 @@ describe ChannelFactory do
         }
       ]
       cache_file = double("Cache File")
-      dl_path = double("DL Path")
       @channel = ChannelFactory.for(
         channel_info: channel_info,
-        video_info_list: video_info_list,
-        dl_path: dl_path
-      )
+        video_info_list: video_info_list)
     end
 
     it "returns a channel object" do
@@ -125,7 +122,7 @@ describe Video do
     context "when video is new" do
       it "returns true" do
         @info["published"] = "2000-01-01"
-        video = Video.new(info: @info, channel_name: "", dl_path: "")
+        video = Video.new(info: @info, channel_name: "")
         expect(Cache).to receive(:sync_time) { Time.parse("1999-01-01") }
         expect(video.new?).to be true
       end
@@ -134,7 +131,7 @@ describe Video do
     context "when video is old" do
       it "returns false" do
         @info["published"] = "1999-01-01"
-        video = Video.new(info: @info, channel_name: "", dl_path: "")
+        video = Video.new(info: @info, channel_name: "")
         expect(Cache).to receive(:sync_time) { Time.parse("2000-01-01") }
         expect(video.new?).to be false
       end
@@ -150,8 +147,7 @@ describe Video do
       expect(Cache).to receive(:update)
       video = Video.new(
         info: info,
-        channel_name: nil,
-        dl_path: dl_path)
+        channel_name: nil)
       expect(video).to receive(:system).
         with("youtube-dl #{id}")
       video.download

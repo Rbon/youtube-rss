@@ -19,8 +19,7 @@ class Main
       parsed_feed = FeedParser.parse(feed)
       channel = ChannelFactory.for(
         channel_info: parsed_feed[:channel_info],
-        video_info_list: parsed_feed[:video_info_list],
-        dl_path: @dl_path)
+        video_info_list: parsed_feed[:video_info_list])
       puts channel.name
       channel.new_videos.each(&:download)
     end
@@ -41,11 +40,10 @@ class FeedDownloader
 end
 
 class ChannelFactory
-  def self.for(channel_info:, video_info_list:, dl_path:)
+  def self.for(channel_info:, video_info_list:)
     video_list = video_info_list.reverse.map { |video_info| Video.new(
       info: video_info,
-      channel_name: channel_info["name"],
-      dl_path: dl_path) }
+      channel_name: channel_info["name"]) }
     channel = Channel.new(
       id: channel_info["yt:channelId"],
       name: channel_info["name"],
@@ -107,13 +105,13 @@ end
 class Video
   attr_reader :id, :published, :title, :description
 
-  def initialize(info:, channel_name:, dl_path:)
+  def initialize(info:, channel_name:)
     @id = info["yt:videoId"]
     @title = info["title"]
     @description = info["description"]
     @published = Time.parse(info["published"])
     @channel_name = channel_name
-    @dl_path = dl_path
+    @dl_path = ARGV[0] || "."
   end
 
   def new?
