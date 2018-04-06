@@ -1,5 +1,3 @@
-#! /usr/bin/env ruby
-
 ### BUGS: If youtube-dl isn't present, the script thinks everything is fine, and
 ###       updates the sync dates.
 
@@ -17,24 +15,33 @@ class Main
 
   def run
     @channel_list.each do |line|
-      channel = ChannelFactory.for(
-        FeedParser.parse(FeedDownloader.download(line)))
+      url = FeedGenerator.run(line)
+      feed = HTTPDownloader.run(url)
+      parsed_feed = FeedParser.parse(feed)
+      channel = ChannelFactory.for(parsed_feed)
       puts channel.name
       channel.new_videos.each(&:download)
     end
   end
 end
 
-# Downloads an xml feed of a channel, given a string
-class FeedDownloader
+# Creates a valid youtube channel feed URL
+class FeedGenerator
   FEED_TYPES = {
-    channel: "/feeds/videos.xml?channel_id=%s",
-    user: "/feeds/videos.xml?user=%s"}.freeze
+    channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
+    user: "https://www.youtube.com/feeds/videos.xml?user=%s"}.freeze
 
-  def self.download(url)
+  def self.run(url)
     url = url.split("#")[0].strip
     type, id = url.split("/")
-    Net::HTTP.get("youtube.com", FEED_TYPES[type.to_sym] % id)
+    FEED_TYPES[type.to_sym] % id
+  end
+end
+
+# Downloads a web page
+class HTTPDownloader
+  def self.run(url)
+    Net::HTTP.get(URI(url))
   end
 end
 
@@ -94,7 +101,7 @@ end
 class Video
   attr_reader :id, :published, :title, :description
 
-  def initialize(info:, channel_name:, downloader: VideoDownloader)
+  def initialize(info:, channel_name:, downloader: VideoDownloader.new)
     @id = info["yt:videoId"]
     @title = info["title"]
     @description = info["description"]
@@ -144,5 +151,3 @@ class VideoDownloader
     Dir.chdir(File.expand_path(@dl_path)) { system("youtube-dl #{id}") }
   end
 end
-
-# Main.new.run

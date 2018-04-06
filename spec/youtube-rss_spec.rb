@@ -5,6 +5,7 @@ describe Main do
     before do
       @channel_dbl = double("Channel")
       @video_dbl = double("Video")
+      @feed = File.read("spec/fixtures/files/videos.xml")
     end
 
     # this should be much better
@@ -12,23 +13,22 @@ describe Main do
       expect(File).to receive(:readlines).and_return(["test"])
       main = Main.new
 
-      expect(FeedDownloader).to receive(:download)
-      expect(FeedParser).to receive(:parse).
-        and_return({channel_info: nil, video_info_list: nil})
-      expect(ChannelFactory).to receive(:for).
-        and_return(@channel_dbl)
-      expect(@channel_dbl).to receive(:name).
-        and_return("test channel")
-      expect(@channel_dbl).to receive(:new_videos).
-        and_return([@video_dbl])
-      expect(@video_dbl).to receive(:download)
+      expect(FeedGenerator).to receive(:run)
+      expect(HTTPDownloader).to receive(:run).and_return(@feed)
+      vid_dlr_dbl = double("VideoDownloader")
+      expect(vid_dlr_dbl).to receive(:run).exactly(15).times
+      expect(VideoDownloader).to receive(:new).exactly(15).times.
+        and_return(vid_dlr_dbl)
+      expect(Cache).to receive(:update).exactly(15).times
+      expect(Cache).to receive(:sync_time).exactly(15).times.
+        and_return(Time.parse("2008-01-01"))
       expect(main).to receive(:puts)
       main.run
     end
   end
 end
 
-describe FeedDownloader do
+describe FeedGenerator do
   describe ".download" do
     before do
       @id = "test_id"
@@ -38,22 +38,16 @@ describe FeedDownloader do
     context "with the old channel name type" do
       it "returns a proper feed url" do
         url = "user/#{@id}"
-        expect(Net::HTTP).to receive(:get).
-          with("youtube.com", "/feeds/videos.xml?user=#{@id}").
-          and_return(@fake_page)
-        page = FeedDownloader.download(url)
-        expect(page).to eql(@fake_page)
+        expect(FeedGenerator.run(url)).
+          to eql("https://www.youtube.com/feeds/videos.xml?user=test_id")
       end
     end
 
     context "with the new channel id type" do
-      it "returns a feed" do
+      it "returns a proper feed url" do
         url = "channel/#{@id}"
-        expect(Net::HTTP).to receive(:get).
-          with("youtube.com", "/feeds/videos.xml?channel_id=#{@id}").
-          and_return(@fake_page)
-        page = FeedDownloader.download(url)
-        expect(page).to eql(@fake_page)
+        expect(FeedGenerator.run(url)).
+          to eql("https://www.youtube.com/feeds/videos.xml?channel_id=test_id")
       end
     end
   end
