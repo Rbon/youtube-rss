@@ -138,18 +138,24 @@ class Cache
   end
 end
 
-# An object which runs youtube-dl
+# Calls SystemCaller with a youtube-dl command
 class VideoDownloader
-  def initialize
-    @dl_path = ARGV[0] || "."
-  end
-
   def run(id:)
-    Dir.chdir(File.expand_path(@dl_path)) { system("youtube-dl #{id}") || die }
+    SystemCaller.run("youtube-dl #{id}")
   end
+end
 
-  def die
-    puts "ERROR"
-    exit
+# Runs a command with system, and stops the program if something goes wrong
+class SystemCaller
+  DL_PATH = (ARGV[0] || ".").freeze
+
+  def self.run(command)
+    Dir.chdir(File.expand_path(DL_PATH)) do
+      status = system(command)
+      unless status
+        puts "ERROR"
+        exit
+      end
+    end
   end
 end

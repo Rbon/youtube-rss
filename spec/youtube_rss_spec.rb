@@ -197,39 +197,37 @@ describe VideoDownloader do
   end
 
   describe "#run" do
-    context "when youtube-dl doesn't exist" do
-      before do
-        @pathbak = ENV["PATH"]
-        ENV["PATH"] = ""
-      end
-
-      it "dies" do
-        expect(@downloader).to receive(:die)
-        @downloader.run(id: "test")
-      end
-
-      after do
-        ENV["PATH"] = @pathbak
-      end
-    end
-
-
     context "given a valid youtube id" do
       it "downloads the video" do
         id = "testid"
-        expect(@downloader).to receive(:system).
-          with("youtube-dl #{id}").
-          and_return(true)
+        expect(SystemCaller).to receive(:run).
+          with("youtube-dl #{id}")
         @downloader.run(id: id)
       end
     end
   end
+end
 
-  describe "#die" do
-    it "complains and exits" do
-      expect(@downloader).to receive(:puts).with("ERROR")
-      expect(@downloader).to receive(:exit)
-      @downloader.die
+describe SystemCaller do
+  describe ".run" do
+    context "when the command exits with anything but 0" do
+      it "complains and dies" do
+        expect(SystemCaller).to receive(:system).and_return(false)
+        expect(SystemCaller).to receive(:puts).with("ERROR")
+        expect(SystemCaller).to receive(:exit)
+        SystemCaller.run("probably-not-a-program")
+      end
+    end
+    context "when the command exits with 0" do
+      before do
+        @command = "a-test-command"
+      end
+
+      it "calls the command" do
+        expect(SystemCaller).to receive(:system).and_return(true)
+        expect(SystemCaller).to_not receive(:exit)
+        SystemCaller.run("definitely-a-program")
+      end
     end
   end
 end
