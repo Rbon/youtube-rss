@@ -192,13 +192,44 @@ describe Cache do
 end
 
 describe VideoDownloader do
-  describe ".run" do
-    it "downloads the video" do
-      id = "testid"
-      downloader = VideoDownloader.new
-      expect(downloader).to receive(:system).
-        with("youtube-dl #{id}")
-      downloader.run(id: id)
+  before do
+    @downloader = VideoDownloader.new
+  end
+
+  describe "#run" do
+    context "when youtube-dl doesn't exist" do
+      before do
+        @pathbak = ENV["PATH"]
+        ENV["PATH"] = ""
+      end
+
+      it "dies" do
+        expect(@downloader).to receive(:die)
+        @downloader.run(id: "test")
+      end
+
+      after do
+        ENV["PATH"] = @pathbak
+      end
+    end
+
+
+    context "given a valid youtube id" do
+      it "downloads the video" do
+        id = "testid"
+        expect(@downloader).to receive(:system).
+          with("youtube-dl #{id}").
+          and_return(true)
+        @downloader.run(id: id)
+      end
+    end
+  end
+
+  describe "#die" do
+    it "complains and exits" do
+      expect(@downloader).to receive(:puts).with("ERROR")
+      expect(@downloader).to receive(:exit)
+      @downloader.die
     end
   end
 end

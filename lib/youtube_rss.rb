@@ -1,6 +1,3 @@
-### BUGS: If youtube-dl isn't present, the script thinks everything is fine, and
-###       updates the sync dates.
-
 require "net/http"
 require "time"
 require "json"
@@ -137,7 +134,7 @@ class Cache
   def self.sync_time(channel_name:)
     time = File.read(CACHE_FILENAME)
     time = JSON.parse(time)[channel_name]
-    Time.parse(time || "2018-03-01")
+    Time.parse(time || "2018-04-05")
   end
 end
 
@@ -148,6 +145,11 @@ class VideoDownloader
   end
 
   def run(id:)
-    Dir.chdir(File.expand_path(@dl_path)) { system("youtube-dl #{id}") }
+    Dir.chdir(File.expand_path(@dl_path)) { system("youtube-dl #{id}") || die }
+  end
+
+  def die
+    puts "ERROR"
+    exit
   end
 end
