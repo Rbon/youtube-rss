@@ -1,4 +1,4 @@
-require "youtube-rss"
+require "youtube_rss"
 
 describe Main do
   describe "#run" do
