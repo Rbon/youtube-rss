@@ -201,7 +201,7 @@ describe VideoDownloader do
       it "downloads the video" do
         id = "testid"
         expect(SystemCaller).to receive(:run).
-          with("youtube-dl #{id}")
+          with("youtube-dl \"https://youtu.be/#{id}\"")
         @downloader.run(id: id)
       end
     end
