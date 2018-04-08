@@ -141,7 +141,7 @@ end
 # Calls SystemCaller with a youtube-dl command
 class VideoDownloader
   def run(id:)
-    SystemCaller.run("youtube-dl #{id}")
+    SystemCaller.run("youtube-dl \"https://youtu.be/#{id}\"")
   end
 end
 
