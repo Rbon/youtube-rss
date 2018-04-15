@@ -7,12 +7,17 @@ require "json"
 
 # Runs the script
 class Main
-  attr_reader :channel_list
+  attr_reader :channel_list, :url_maker, :http_downloader, :feed_parser,
+              :channel_factory
 
   def initialize
     @dl_path = ARGV[0] || "."
     @channel_list = File.readlines(
       File.expand_path("~/.config/youtube-rss/channel_list.txt"))
+    @url_maker = URLMaker
+    @http_downloader = HTTPDownloader
+    @feed_parser = FeedParser
+    @channel_factory = ChannelFactory
   end
 
   def run
@@ -26,19 +31,19 @@ class Main
   end
 
   def url(line)
-    URLMaker.run(line)
+    url_maker.run(line)
   end
 
   def page(line)
-    HTTPDownloader.run(url(line))
+    http_downloader.run(url(line))
   end
 
   def feed(line)
-    FeedParser.parse(page(line))
+    feed_parser.parse(page(line))
   end
 
   def make_channel(line)
-    ChannelFactory.for(feed(line))
+    channel_factory.for(feed(line))
   end
 end
 
@@ -131,7 +136,7 @@ end
 # An object which contains video info, and some methods related to downloading
 class Video
   attr_reader :id, :published, :title, :description, :channel_name,
-    :downloader
+    :downloader, :cache
 
   def initialize(info:, channel_name:, downloader: VideoDownloader.new)
     @id = info["yt:videoId"]
@@ -140,15 +145,16 @@ class Video
     @published = Time.parse(info["published"])
     @channel_name = channel_name
     @downloader = downloader
+    @cache = Cache
   end
 
   def new?
-    published > Cache.sync_time(channel_name: channel_name)
+    published > cache.sync_time(channel_name: channel_name)
   end
 
   def download
     downloader.run(id)
-    Cache.update(time: published, channel_name: channel_name)
+    cache.update(time: published, channel_name: channel_name)
   end
 end
 
