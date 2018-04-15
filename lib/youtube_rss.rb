@@ -129,8 +129,7 @@ class Cache
   CACHE_FILENAME = File.expand_path("~/.config/youtube-rss/cache.json")
 
   def self.update(time:, channel_name:)
-    cache = File.read(CACHE_FILENAME)
-    cache = JSON.parse(cache)
+    cache = read
     cache[channel_name] = time
     self.write(cache)
   end
@@ -139,10 +138,12 @@ class Cache
     File.open(CACHE_FILENAME, "w") { |file| JSON.dump(data, file) }
   end
 
+  def self.read
+    JSON.parse(File.read(CACHE_FILENAME))
+  end
+
   def self.sync_time(channel_name:)
-    time = File.read(CACHE_FILENAME)
-    time = JSON.parse(time)[channel_name]
-    Time.parse(time || "2018-03-01")
+    Time.parse(read[channel_name] || "2018-03-01")
   end
 end
 
