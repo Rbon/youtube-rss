@@ -17,12 +17,26 @@ class Main
 
   def run
     channel_list.each do |line|
-      feed = HTTPDownloader.run(URLMaker.run(line))
-      parsed_feed = FeedParser.parse(feed)
-      channel = ChannelFactory.for(parsed_feed)
+      channel = make_channel(line)
       puts channel.name
       channel.new_videos.each(&:download)
     end
+  end
+
+  def url(line)
+    URLMaker.run(line)
+  end
+
+  def page(line)
+    HTTPDownloader.run(url(line))
+  end
+
+  def feed(line)
+    FeedParser.parse(page(line))
+  end
+
+  def make_channel(line)
+    ChannelFactory.for(feed(line))
   end
 end
 
