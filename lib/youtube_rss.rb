@@ -16,11 +16,13 @@ class Main
   end
 
   def run
-    channel_list.each do |line|
-      channel = make_channel(line)
-      puts channel.name
-      channel.new_videos.each(&:download)
-    end
+    channel_list.each { |line| tick(line) }
+  end
+
+  def tick(line)
+    channel = make_channel(line)
+    puts channel.name
+    channel.new_videos.each(&:download)
   end
 
   def url(line)
