@@ -118,7 +118,7 @@ class Video
   end
 
   def download
-    downloader.run(id: id)
+    downloader.run(id)
     Cache.update(time: published, channel_name: channel_name)
   end
 end
@@ -152,7 +152,7 @@ class VideoDownloader
     @dl_path = ARGV[0] || "."
   end
 
-  def run(id:)
+  def run(id)
     Dir.chdir(File.expand_path(dl_path)) { system("youtube-dl #{id}") }
   end
 end

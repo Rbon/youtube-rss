@@ -146,7 +146,7 @@ describe Video do
         channel_name: nil,
         downloader: downloader_dbl)
       expect(downloader_dbl).to receive(:run).
-        with(id: id)
+        with(id)
       video.download
     end
   end
@@ -198,7 +198,7 @@ describe VideoDownloader do
       downloader = VideoDownloader.new
       expect(downloader).to receive(:system).
         with("youtube-dl #{id}")
-      downloader.run(id: id)
+      downloader.run(id)
     end
   end
 end
