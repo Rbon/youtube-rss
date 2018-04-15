@@ -7,6 +7,8 @@ require "json"
 
 # Runs the script
 class Main
+  attr_reader :channel_list
+
   def initialize
     @dl_path = ARGV[0] || "."
     @channel_list = File.readlines(
@@ -14,7 +16,7 @@ class Main
   end
 
   def run
-    @channel_list.each do |line|
+    channel_list.each do |line|
       url = FeedGenerator.run(line)
       feed = HTTPDownloader.run(url)
       parsed_feed = FeedParser.parse(feed)
@@ -93,13 +95,14 @@ class Channel
   end
 
   def new_videos
-    @video_list.select(&:new?)
+    video_list.select(&:new?)
   end
 end
 
 # An object which contains video info, and some methods related to downloading
 class Video
-  attr_reader :id, :published, :title, :description
+  attr_reader :id, :published, :title, :description, :channel_name,
+    :downloader
 
   def initialize(info:, channel_name:, downloader: VideoDownloader.new)
     @id = info["yt:videoId"]
@@ -111,12 +114,12 @@ class Video
   end
 
   def new?
-    @published > Cache.sync_time(channel_name: @channel_name)
+    published > Cache.sync_time(channel_name: channel_name)
   end
 
   def download
-    @downloader.run(id: @id)
-    Cache.update(time: @published, channel_name: @channel_name)
+    downloader.run(id: id)
+    Cache.update(time: published, channel_name: channel_name)
   end
 end
 
@@ -143,11 +146,13 @@ end
 
 # An object which runs youtube-dl
 class VideoDownloader
+  attr_reader :dl_path
+
   def initialize
     @dl_path = ARGV[0] || "."
   end
 
   def run(id:)
-    Dir.chdir(File.expand_path(@dl_path)) { system("youtube-dl #{id}") }
+    Dir.chdir(File.expand_path(dl_path)) { system("youtube-dl #{id}") }
   end
 end
