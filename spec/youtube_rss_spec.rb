@@ -13,7 +13,7 @@ describe Main do
       expect(File).to receive(:readlines).and_return(["test"])
       main = Main.new
 
-      expect(FeedGenerator).to receive(:run)
+      expect(URLMaker).to receive(:run)
       expect(HTTPDownloader).to receive(:run).and_return(@feed)
       vid_dlr_dbl = double("VideoDownloader")
       expect(vid_dlr_dbl).to receive(:run).exactly(15).times
@@ -28,7 +28,7 @@ describe Main do
   end
 end
 
-describe FeedGenerator do
+describe URLMaker do
   describe ".download" do
     before do
       @id = "test_id"
@@ -38,7 +38,7 @@ describe FeedGenerator do
     context "with the old channel name type" do
       it "returns a proper feed url" do
         url = "user/#{@id}"
-        expect(FeedGenerator.run(url)).
+        expect(URLMaker.run(url)).
           to eql("https://www.youtube.com/feeds/videos.xml?user=test_id")
       end
     end
@@ -46,7 +46,7 @@ describe FeedGenerator do
     context "with the new channel id type" do
       it "returns a proper feed url" do
         url = "channel/#{@id}"
-        expect(FeedGenerator.run(url)).
+        expect(URLMaker.run(url)).
           to eql("https://www.youtube.com/feeds/videos.xml?channel_id=test_id")
       end
     end

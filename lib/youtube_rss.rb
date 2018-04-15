@@ -17,8 +17,7 @@ class Main
 
   def run
     channel_list.each do |line|
-      url = FeedGenerator.run(line)
-      feed = HTTPDownloader.run(url)
+      feed = HTTPDownloader.run(URLMaker.run(line))
       parsed_feed = FeedParser.parse(feed)
       channel = ChannelFactory.for(parsed_feed)
       puts channel.name
@@ -28,14 +27,14 @@ class Main
 end
 
 # Creates a valid youtube channel feed URL
-class FeedGenerator
+class URLMaker
   FEED_TYPES = {
     channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
     user: "https://www.youtube.com/feeds/videos.xml?user=%s"}.freeze
 
-  def self.run(url)
-    url = url.split("#")[0].strip
-    type, id = url.split("/")
+  def self.run(line)
+    line = line.split("#")[0].strip
+    type, id = line.split("/")
     FEED_TYPES[type.to_sym] % id
   end
 end
