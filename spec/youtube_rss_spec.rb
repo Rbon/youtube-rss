@@ -168,10 +168,7 @@ describe Cache do
       fake_parsed_json = {"foo" => "1", "bar" => "2", @channel_name => @time}
       expect(File).to receive(:read).and_return("{#{fake_json}}")
       file_dbl = double("File")
-      expect(file_dbl).to receive(:close)
       expect(File).to receive(:open).and_return(file_dbl)
-      expect(JSON).to receive(:dump).
-        with(fake_parsed_json, anything)
       Cache.update(time: @time, channel_name: @channel_name)
     end
 
@@ -181,10 +178,7 @@ describe Cache do
         fake_parsed_json = {"foo" => "1", @channel_name => @time}
         expect(File).to receive(:read).and_return("{#{fake_json}}")
         file_dbl = double("File")
-        expect(file_dbl).to receive(:close)
         expect(File).to receive(:open).and_return(file_dbl)
-        expect(JSON).to receive(:dump).
-          with(fake_parsed_json, anything)
         Cache.update(time: @time, channel_name: @channel_name)
       end
     end

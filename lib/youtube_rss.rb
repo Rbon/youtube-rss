@@ -132,9 +132,11 @@ class Cache
     cache = File.read(CACHE_FILENAME)
     cache = JSON.parse(cache)
     cache[channel_name] = time
-    file = File.open(CACHE_FILENAME, "w")
-    JSON.dump(cache, file)
-    file.close
+    self.write(cache)
+  end
+
+  def self.write(data)
+    File.open(CACHE_FILENAME, "w") { |file| JSON.dump(data, file) }
   end
 
   def self.sync_time(channel_name:)
