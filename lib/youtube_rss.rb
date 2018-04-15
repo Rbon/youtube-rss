@@ -67,31 +67,34 @@ class FeedParser
   TAG_REGEX = /<(?<tag>.*)>(?<value>.*)<.*>/
 
   def self.parse(feed)
-    entries = make_entries(feed)
-    {channel_info: channel_info(entries),
-     video_info_list: video_info_list(entries)}
+    info_list(entries(feed))
   end
 
   private_class_method
 
+  def self.info_list(entries)
+    {channel_info: channel_info(entries),
+     video_info_list: video_info_list(entries)}
+  end
+
   def self.channel_info(entries)
-    make_info(entries[0])
+    info(entries[0])
   end
 
   def self.video_info_list(entries)
-    entries.drop(1).map { |entry| make_info(entry) }
+    entries.drop(1).map { |entry| info(entry) }
   end
 
-  def self.make_entries(feed)
+  def self.entries(feed)
     feed.split("<entry>")
   end
 
-  def self.make_info(entry)
-    info = {}
+  def self.info(entry)
+    output = {}
     entry.lines do |line|
-      TAG_REGEX.match(line) { |match| info[match[:tag]] = match[:value] }
+      TAG_REGEX.match(line) { |match| output[match[:tag]] = match[:value] }
     end
-    info
+    output
   end
 end
 
