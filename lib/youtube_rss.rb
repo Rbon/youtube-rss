@@ -7,17 +7,13 @@ require "json"
 
 # Runs the script
 class Main
-  attr_reader :channel_list, :url_maker, :http_downloader, :feed_parser,
-              :channel_factory
+  attr_reader :channel_list, :channel_factory
 
-  def initialize
+  def initialize(channel_factory: ChannelFactory.new, channel_list: nil)
     @dl_path = ARGV[0] || "."
-    @channel_list = File.readlines(
+    @channel_list = channel_list || File.readlines(
       File.expand_path("~/.config/youtube-rss/channel_list.txt"))
-    @url_maker = URLMaker
-    @http_downloader = HTTPDownloader
-    @feed_parser = FeedParser
-    @channel_factory = ChannelFactory
+    @channel_factory = channel_factory
   end
 
   def run
@@ -30,89 +26,103 @@ class Main
     channel.new_videos.each(&:download)
   end
 
-  def url(line)
-    url_maker.run(line)
-  end
-
-  def page(line)
-    http_downloader.run(url(line))
-  end
-
-  def feed(line)
-    feed_parser.parse(page(line))
-  end
-
   def make_channel(line)
-    channel_factory.for(feed(line))
+    channel_factory.for(line)
   end
 end
 
 # Creates a valid youtube channel feed URL
 class URLMaker
-  FEED_TYPES = {
-    channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
-    user: "https://www.youtube.com/feeds/videos.xml?user=%s"}.freeze
+  def feed_types
+    {channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
+     user: "https://www.youtube.com/feeds/videos.xml?user=%s"}
+  end
 
-  def self.run(line)
+  def run(line)
     line = line.split("#")[0].strip
     type, id = line.split("/")
-    FEED_TYPES[type.to_sym] % id
+    feed_types[type.to_sym] % id
   end
 end
 
 # Downloads a web page
 class HTTPDownloader
-  def self.run(url)
-    Net::HTTP.get(URI(url))
+  def initialize(url_maker: URLMaker.new)
+    @url_maker = url_maker
+  end
+
+  def run(line)
+    Net::HTTP.get(URI(line))
+  end
+
+  def url(line)
+    @url_maker.run(line)
   end
 end
 
 # Makes a Channel class
 class ChannelFactory
-  def self.for(channel_info:, video_info_list:)
+  def initialize(feed_parser: FeedParser.new)
+    @feed_parser = feed_parser
+  end
+
+  def for(line)
+    channel_info, video_info_list = feed(line)
     video_list = video_info_list.reverse.map do |video_info|
       Video.new(
         info: video_info,
         channel_name: channel_info["name"])
     end
+
     Channel.new(
       id: channel_info["yt:channelId"],
       name: channel_info["name"],
       video_list: video_list)
   end
+
+  def feed(line)
+    @feed_parser.run(line)
+  end
 end
 
 # Lazily parses xml files into the relevant info
 class FeedParser
-  TAG_REGEX = /<(?<tag>.*)>(?<value>.*)<.*>/
+  def initialize(http_downloader: HTTPDownloader.new)
+    @tag_regex = /<(?<tag>.*)>(?<value>.*)<.*>/
+    @http_downloader = http_downloader
+  end
 
-  def self.parse(feed)
-    info_list(entries(feed))
+  def run(line)
+    info_list(entries(page(line)))
+  end
+
+  def page(line)
+    @http_downloader.run(line)
   end
 
   private_class_method
 
-  def self.info_list(entries)
+  def info_list(entries)
     {channel_info: channel_info(entries),
      video_info_list: video_info_list(entries)}
   end
 
-  def self.channel_info(entries)
+  def channel_info(entries)
     info(entries[0])
   end
 
-  def self.video_info_list(entries)
+  def video_info_list(entries)
     entries.drop(1).map { |entry| info(entry) }
   end
 
-  def self.entries(feed)
+  def entries(feed)
     feed.split("<entry>")
   end
 
-  def self.info(entry)
+  def info(entry)
     output = {}
     entry.lines do |line|
-      TAG_REGEX.match(line) { |match| output[match[:tag]] = match[:value] }
+      @tag_regex.match(line) { |match| output[match[:tag]] = match[:value] }
     end
     output
   end

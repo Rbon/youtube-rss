@@ -3,25 +3,22 @@ require "youtube_rss"
 describe Main do
   describe "#run" do
     before do
+      @chan_fact_dbl = double("Channel Factory")
       @channel_dbl = double("Channel")
       @video_dbl = double("Video")
       @feed = File.read("spec/fixtures/files/videos.xml")
     end
 
-    # this should be much better
     it "runs the script" do
-      expect(File).to receive(:readlines).and_return(["test"])
-      main = Main.new
-
-      expect(URLMaker).to receive(:run)
-      expect(HTTPDownloader).to receive(:run).and_return(@feed)
-      vid_dlr_dbl = double("VideoDownloader")
-      expect(vid_dlr_dbl).to receive(:run).exactly(15).times
-      expect(VideoDownloader).to receive(:new).exactly(15).times.
-        and_return(vid_dlr_dbl)
-      expect(Cache).to receive(:update).exactly(15).times
-      expect(Cache).to receive(:sync_time).exactly(15).times.
-        and_return(Time.parse("2008-01-01"))
+      expect(@chan_fact_dbl).to receive(:for).
+        and_return(@channel_dbl)
+      expect(@channel_dbl).to receive(:name).
+        and_return("test name")
+      expect(@channel_dbl).to receive(:new_videos).
+        and_return([@video_dbl])
+      expect(@video_dbl).to receive(:download)
+      main = Main.new(channel_list: ["user/testuser"],
+                      channel_factory: @chan_fact_dbl)
       expect(main).to receive(:puts)
       main.run
     end
@@ -38,7 +35,7 @@ describe URLMaker do
     context "with the old channel name type" do
       it "returns a proper feed url" do
         url = "user/#{@id}"
-        expect(URLMaker.run(url)).
+        expect(URLMaker.new.run(url)).
           to eql("https://www.youtube.com/feeds/videos.xml?user=test_id")
       end
     end
@@ -46,7 +43,7 @@ describe URLMaker do
     context "with the new channel id type" do
       it "returns a proper feed url" do
         url = "channel/#{@id}"
-        expect(URLMaker.run(url)).
+        expect(URLMaker.new.run(url)).
           to eql("https://www.youtube.com/feeds/videos.xml?channel_id=test_id")
       end
     end
@@ -56,17 +53,18 @@ end
 describe FeedParser do
   describe ".parse" do
     before do
-      @feed = File.read("spec/fixtures/files/videos.xml")
-      @parsed_feed = FeedParser.parse(@feed)
+      @page = File.read("spec/fixtures/files/videos.xml")
+      @dlr_double = double("HTTPDownloader")
+      @feed_parser = FeedParser.new(http_downloader: @dlr_double)
     end
 
-    it "returns a hash with channel info" do
+    it "returns a hash with channel info and video info" do
+      expect(@dlr_double).to receive(:run).
+        and_return(@page)
+      @parsed_feed = @feed_parser.run("user/testuser")
       channel_info = @parsed_feed[:channel_info]
       expect(channel_info["name"]).to eql("jackisanerd")
       expect(channel_info["yt:channelId"]).to eql("UCTjqo_3046IXFFGZ_M5jedA")
-    end
-
-    it "returns a hash with video info" do
       video_entry = @parsed_feed[:video_info_list][0]
       expect(video_entry["title"]).to eql("Day 4")
       expect(video_entry["yt:videoId"]).to eql("Ah6xjqA0Cj0")
@@ -78,8 +76,8 @@ end
 describe ChannelFactory do
   describe ".for" do
     before do
-      channel_info = {"yt:channelId" => "test chanid", "name" => "test channel"}
-      video_info_list = [
+      @channel_info = {"yt:channelId" => "test chanid", "name" => "test channel"}
+      @video_info_list = [
         {
           "title" => "test video 2", "yt:videoId" => "test videoid 2",
           "published" => "2008-01-01", "description" => "desc1"
@@ -89,20 +87,18 @@ describe ChannelFactory do
           "published" => "1999-01-01", "description" => "desc2"
         }
       ]
-      cache_file = double("Cache File")
-      @channel = ChannelFactory.for(
-        channel_info: channel_info,
-        video_info_list: video_info_list)
+      @feed_parser_double = double("Feed Parser")
+      @channel_factory = ChannelFactory.new(feed_parser: @feed_parser_double)
     end
 
     it "returns a channel object" do
+      expect(@feed_parser_double).to receive(:run).
+        and_return([@channel_info, @video_info_list])
+      @channel = @channel_factory.for("user/testuser")
       expect(@channel.name).to eql("test channel")
       expect(@channel.id).to eql("test chanid")
-    end
-
-    it "returns a channel object with a list of videos" do
-      expect(@channel.video_list.length).to eql(2)
       video = @channel.video_list[0]
+      expect(@channel.video_list.length).to eql(2)
       expect(video.title).to eql("test video 1")
       expect(video.id).to eql("test videoid 1")
     end
