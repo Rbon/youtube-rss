@@ -149,11 +149,19 @@ class Video
   end
 
   def new?
-    published > cache.sync_time(channel_name: channel_name)
+    published > sync_time(channel_name)
+  end
+
+  def sync_time(channel_name)
+    cache.sync_time(channel_name: channel_name)
   end
 
   def download
     downloader.run(id)
+    update_cache
+  end
+
+  def update_cache
     cache.update(time: published, channel_name: channel_name)
   end
 end
