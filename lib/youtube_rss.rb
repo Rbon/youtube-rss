@@ -20,6 +20,8 @@ class Main
     channel_list.each { |line| tick(line) }
   end
 
+  private
+
   def tick(line)
     channel = make_channel(line)
     puts channel.name
@@ -33,15 +35,17 @@ end
 
 # Creates a valid youtube channel feed URL
 class URLMaker
-  def feed_types
-    {channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
-     user: "https://www.youtube.com/feeds/videos.xml?user=%s"}
-  end
-
   def run(line)
     line = line.split("#")[0].strip
     type, id = line.split("/")
     feed_types[type.to_sym] % id
+  end
+
+  private
+
+  def feed_types
+    {channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
+     user: "https://www.youtube.com/feeds/videos.xml?user=%s"}
   end
 end
 
@@ -52,8 +56,10 @@ class HTTPDownloader
   end
 
   def run(line)
-    Net::HTTP.get(URI(line))
+    Net::HTTP.get(URI(url(line)))
   end
+
+  private
 
   def url(line)
     @url_maker.run(line)
@@ -80,6 +86,8 @@ class ChannelFactory
       video_list: video_list)
   end
 
+  private
+
   def feed(line)
     @feed_parser.run(line)
   end
@@ -96,11 +104,11 @@ class FeedParser
     info_list(entries(page(line)))
   end
 
+  private
+
   def page(line)
     @http_downloader.run(line)
   end
-
-  private_class_method
 
   def info_list(entries)
     {channel_info: channel_info(entries),
@@ -162,13 +170,15 @@ class Video
     published > sync_time(channel_name)
   end
 
-  def sync_time(channel_name)
-    cache.sync_time(channel_name: channel_name)
-  end
-
   def download
     downloader.run(id)
     update_cache
+  end
+
+  private
+
+  def sync_time(channel_name)
+    cache.sync_time(channel_name: channel_name)
   end
 
   def update_cache
@@ -187,6 +197,12 @@ class Cache
     self.write(cache)
   end
 
+  def self.sync_time(channel_name:)
+    Time.parse(read[channel_name] || "2018-03-01")
+  end
+
+  private_class_method
+
   def self.write(data)
     File.open(CACHE_FILENAME, "w") { |file| JSON.dump(data, file) }
   end
@@ -195,9 +211,6 @@ class Cache
     JSON.parse(File.read(CACHE_FILENAME))
   end
 
-  def self.sync_time(channel_name:)
-    Time.parse(read[channel_name] || "2018-03-01")
-  end
 end
 
 # An object which runs youtube-dl
