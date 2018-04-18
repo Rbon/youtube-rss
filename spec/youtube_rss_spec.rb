@@ -2,25 +2,27 @@ require "youtube_rss"
 
 describe Main do
   describe "#run" do
-    before do
-      @chan_fact_dbl = double("Channel Factory")
-      @channel_dbl = double("Channel")
-      @video_dbl = double("Video")
-      @feed = File.read("spec/fixtures/files/videos.xml")
+    it "tells the channel list to sync" do
+      # feed = File.read("spec/fixtures/files/videos.xml")
+      channel_list_dbl = double("Channel List")
+      expect(channel_list_dbl).to receive(:sync)
+      Main.new(channel_list: channel_list_dbl).run
     end
+  end
+end
 
-    it "runs the script" do
-      expect(@chan_fact_dbl).to receive(:for).
-        and_return(@channel_dbl)
-      expect(@channel_dbl).to receive(:name).
-        and_return("test name")
-      expect(@channel_dbl).to receive(:new_videos).
-        and_return([@video_dbl])
-      expect(@video_dbl).to receive(:download)
-      main = Main.new(channel_list: ["user/testuser"],
-                      channel_factory: @chan_fact_dbl)
-      expect(main).to receive(:puts)
-      main.run
+describe ChannelList do
+  describe "#sync" do
+    it "tells each channel to sync" do
+      channel_dbl = double("Channel")
+      expect(channel_dbl).to receive(:sync).exactly(2).times
+      channel_factory_dbl = double("Channel Factory")
+      expect(channel_factory_dbl).to receive(:for).
+        exactly(2).times.
+        and_return(channel_dbl)
+      ChannelList.new(
+        channel_factory: channel_factory_dbl,
+        channel_list: ["user/testuser1", "user/testuser2"]).sync
     end
   end
 end
@@ -69,38 +71,6 @@ describe FeedParser do
       expect(video_entry["title"]).to eql("Day 4")
       expect(video_entry["yt:videoId"]).to eql("Ah6xjqA0Cj0")
       expect(video_entry["published"]).to eql("2018-03-03T05:59:29+00:00")
-    end
-  end
-end
-
-describe ChannelFactory do
-  describe ".for" do
-    before do
-      @channel_info = {"yt:channelId" => "test chanid", "name" => "test channel"}
-      @video_info_list = [
-        {
-          "title" => "test video 2", "yt:videoId" => "test videoid 2",
-          "published" => "2008-01-01", "description" => "desc1"
-        },
-        {
-          "title" => "test video 1", "yt:videoId" => "test videoid 1",
-          "published" => "1999-01-01", "description" => "desc2"
-        }
-      ]
-      @feed_parser_double = double("Feed Parser")
-      @channel_factory = ChannelFactory.new(feed_parser: @feed_parser_double)
-    end
-
-    it "returns a channel object" do
-      expect(@feed_parser_double).to receive(:run).
-        and_return([@channel_info, @video_info_list])
-      @channel = @channel_factory.for("user/testuser")
-      expect(@channel.name).to eql("test channel")
-      expect(@channel.id).to eql("test chanid")
-      video = @channel.video_list[0]
-      expect(@channel.video_list.length).to eql(2)
-      expect(video.title).to eql("test video 1")
-      expect(video.id).to eql("test videoid 1")
     end
   end
 end

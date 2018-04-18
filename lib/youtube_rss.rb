@@ -7,29 +7,72 @@ require "json"
 
 # Runs the script
 class Main
-  attr_reader :channel_list, :channel_factory
 
-  def initialize(channel_factory: ChannelFactory.new, channel_list: nil)
-    @dl_path = ARGV[0] || "."
-    @channel_list = channel_list || File.readlines(
-      File.expand_path("~/.config/youtube-rss/channel_list.txt"))
-    @channel_factory = channel_factory
+  def initialize(args)
+    # @dl_path = ARGV[0] || "."
+    args = defaults.merge(args)
+    @channel_list = args[:channel_list]
   end
 
   def run
-    channel_list.each { |line| tick(line) }
+    channel_list.sync
   end
 
   private
 
-  def tick(line)
-    channel = make_channel(line)
-    puts channel.name
-    channel.new_videos.each(&:download)
+  attr_reader :channel_list
+
+  def defaults
+    {channel_list: ChannelList}
+  end
+end
+
+class ChannelList
+  def initialize(args)
+    args = defaults.merge(args)
+    @channel_factory = args[:channel_factory]
+    @channel_list    = args[:channel_list]
   end
 
-  def make_channel(line)
-    channel_factory.for(line)
+  def sync
+    list.each(&:sync)
+  end
+
+  private
+
+  attr_reader :channel_list, :channel_factory
+
+  def list
+    channel_list.map { |info| channel_factory.for(info) }
+  end
+
+  def defaults
+    {channel_list: File.readlines(
+      File.expand_path("~/.config/youtube-rss/channel_list.txt")),
+    channel_factory: ChannelFactory.new}
+  end
+end
+
+class ChannelFactory
+  def initialize(args = {})
+
+  end
+
+  private
+
+  def defaults
+    {}
+  end
+end
+#
+# An object which contains channel info, and a list of video objects
+class Channel
+  def new_videos
+    video_list.select(&:new?)
+  end
+
+  def sync
+
   end
 end
 
@@ -66,32 +109,32 @@ class HTTPDownloader
   end
 end
 
-# Makes a Channel class
-class ChannelFactory
-  def initialize(feed_parser: FeedParser.new)
-    @feed_parser = feed_parser
-  end
+# # Makes a Channel class
+# class ChannelFactory
+  # def initialize(feed_parser: FeedParser.new)
+    # @feed_parser = feed_parser
+  # end
 
-  def for(line)
-    channel_info, video_info_list = feed(line)
-    video_list = video_info_list.reverse.map do |video_info|
-      Video.new(
-        info: video_info,
-        channel_name: channel_info["name"])
-    end
+  # def for(line)
+    # channel_info, video_info_list = feed(line)
+    # video_list = video_info_list.reverse.map do |video_info|
+      # Video.new(
+        # info: video_info,
+        # channel_name: channel_info["name"])
+    # end
 
-    Channel.new(
-      id: channel_info["yt:channelId"],
-      name: channel_info["name"],
-      video_list: video_list)
-  end
+    # Channel.new(
+      # id: channel_info["yt:channelId"],
+      # name: channel_info["name"],
+      # video_list: video_list)
+  # end
 
-  private
+  # private
 
-  def feed(line)
-    @feed_parser.run(line)
-  end
-end
+  # def feed(line)
+    # @feed_parser.run(line)
+  # end
+# end
 
 # Lazily parses xml files into the relevant info
 class FeedParser
@@ -136,20 +179,6 @@ class FeedParser
   end
 end
 
-# An object which contains channel info, and a list of video objects
-class Channel
-  attr_reader :name, :id, :video_list
-
-  def initialize(id:, name:, video_list:)
-    @id = id
-    @name = name
-    @video_list = video_list
-  end
-
-  def new_videos
-    video_list.select(&:new?)
-  end
-end
 
 # An object which contains video info, and some methods related to downloading
 class Video
