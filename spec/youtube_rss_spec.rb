@@ -67,6 +67,7 @@ describe VideoFactory do
         yt_videoId:        "Ah6xjqA0Cj0",
         uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
     end
+
     it "builds a youtube object" do
       video = @video_factory.build(@entry)
       expect(video.title).to eql("Day 4")
@@ -78,44 +79,45 @@ describe VideoFactory do
 end
 
 describe Video do
-  describe "#new?" do
-    before(:all) do
-      @info = {"yt:videoId" => "test video"}
-    end
+  before do
+    @cache_dbl      = double("Cache")
+    @downloader_dbl = double("Video Downloader")
+    @id = "testid"
+    @time = "2000-01-01"
+    @channel_name = "test channel name"
+    @video = Video.new(
+      id:           @id,
+      channel_name: @channel_name,
+      title:        "a test video",
+      cache:        @cache_dbl,
+      downloader:   @downloader_dbl,
+      published:    @time)
+  end
 
+  describe "#new?" do
     context "when video is new" do
-      xit "returns true" do
-        @info["published"] = "2000-01-01"
-        video = Video.new(info: @info, channel_name: "")
-        expect(Cache).to receive(:sync_time) { Time.parse("1999-01-01") }
-        expect(video.new?).to be true
+      it "returns true" do
+        expect(@cache_dbl).to receive(:sync_time).
+          and_return(Time.parse("1999-01-01"))
+        expect(@video.new?).to be true
       end
     end
 
     context "when video is old" do
-      xit "returns false" do
-        @info["published"] = "1999-01-01"
-        video = Video.new(info: @info, channel_name: "")
-        expect(Cache).to receive(:sync_time) { Time.parse("2000-01-01") }
-        expect(video.new?).to be false
+      it "returns false" do
+        expect(@cache_dbl).to receive(:sync_time).
+          and_return(Time.parse("2008-01-01"))
+        expect(@video.new?).to be false
       end
     end
   end
 
   describe "#download" do
-    xit "downloads a video" do
-      id = "testid"
-      pub_time = "2017-03-01"
-      info = {"yt:videoId" => id, "published" => pub_time}
-      downloader_dbl = double("Downloader")
-      expect(Cache).to receive(:update)
-      video = Video.new(
-        info: info,
-        channel_name: nil,
-        downloader: downloader_dbl)
-      expect(downloader_dbl).to receive(:run).
-        with(id)
-      video.download
+    it "downloads a video" do
+      expect(@downloader_dbl).to receive(:run).with(@id)
+      expect(@cache_dbl).to receive(:update).
+        with(time: Time.parse(@time), channel_name: @channel_name)
+      @video.download
     end
   end
 end
