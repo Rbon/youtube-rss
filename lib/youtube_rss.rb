@@ -111,6 +111,39 @@ class PageDownloader
   end
 end
 
+class ChannelFactory
+  def initialize(entry_parser: EntryParser.new,
+                 channel_class: Channel,
+                 video_factory: VideoFactory.new)
+
+    @entry_parser  = entry_parser
+    @channel_class = channel_class
+    @video_factory = video_factory
+  end
+
+  def build(info)
+    entries = parse_entries(info)
+    channel_entry = entries[0]
+    video_list = make_video_list(entries.drop(1))
+    channel_class.new(
+      name: channel_entry[:name],
+      video_list: video_list)
+  end
+
+  private
+
+  attr_reader :entry_parser, :channel_class, :video_factory
+
+  def parse_entries(info)
+    entry_parser.run(info)
+  end
+
+  def make_video_list(entries)
+    entries.map { |entry| video_factory.build(entry) }
+  end
+end
+
+
 # # Makes a Channel class
 # class ChannelFactory
   # def initialize(feed_parser: FeedParser.new)
@@ -172,18 +205,37 @@ class EntryParser
   end
 end
 
+class VideoFactory
+  def initialize(video_class: Video)
+    @video_class = video_class
+  end
+
+  def build(entry)
+    video_class.new(
+      id:           entry[:yt_videoId],
+      title:        entry[:title],
+      published:    entry[:published],
+      channel_name: entry[:name])
+  end
+
+  private
+
+  attr_reader :video_class
+end
+
 class Video
   attr_reader :id, :published, :title, :description, :channel_name,
     :downloader, :cache
 
-  def initialize(info:, channel_name:, downloader: VideoDownloader.new)
-    @id = info["yt:videoId"]
-    @title = info["title"]
-    @description = info["description"]
-    @published = Time.parse(info["published"])
+  def initialize(id:, title:, published:, channel_name:,
+                 downloader: VideoDownloader.new, cache: Cache)
+
+    @id           = id
+    @title        = title
+    @published    = Time.parse(published)
     @channel_name = channel_name
-    @downloader = downloader
-    @cache = Cache
+    @downloader   = downloader
+    @cache        = cache
   end
 
   def new?
