@@ -195,8 +195,6 @@ class VideoFactory
 end
 
 class Video
-  attr_reader :id, :published, :title, :description, :channel_name
-
   def initialize(id:, title:, published:, channel_name:,
                  downloader: VideoDownloader.new, cache: Cache)
 
@@ -219,7 +217,8 @@ class Video
 
   private
 
-  attr_reader :cache, :downloader
+  attr_reader :id, :published, :title, :description, :channel_name,
+              :cache, :downloader
 
   def sync_time(channel_name)
     cache.sync_time(channel_name: channel_name)

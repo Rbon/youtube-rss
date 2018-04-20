@@ -54,7 +54,8 @@ end
 describe VideoFactory do
   describe "#build" do
     before do
-      @video_factory = VideoFactory.new
+      @video_class_dbl = double("Video Class")
+      @video_factory = VideoFactory.new(video_class: @video_class_dbl)
       @entry = {
         id:                "yt:video:Ah6xjqA0Cj0",
         media_description: "Not the best day but maybe tomorrow will be better",
@@ -66,14 +67,14 @@ describe VideoFactory do
         yt_channelId:      "UCTjqo_3046IXFFGZ_M5jedA",
         yt_videoId:        "Ah6xjqA0Cj0",
         uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
+      @video_info = {
+        id: "Ah6xjqA0Cj0", title: "Day 4",
+        published: "2018-03-03T05:59:29+00:00", channel_name: "jackisanerd"}
     end
 
     it "builds a youtube object" do
-      video = @video_factory.build(@entry)
-      expect(video.title).to eql("Day 4")
-      expect(video.id).to eql("Ah6xjqA0Cj0")
-      expect(video.channel_name).to eql("jackisanerd")
-      expect(video.published).to eql(Time.parse("2018-03-03T05:59:29+00:00"))
+      expect(@video_class_dbl).to receive(:new).with(@video_info)
+      @video_factory.build(@entry)
     end
   end
 end
