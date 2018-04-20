@@ -11,6 +11,55 @@ describe Main do
   end
 end
 
+describe ChannelFactory do
+  describe "#build" do
+    before do
+      @entry_parser_dbl  = double("Entry Parser")
+      @video_factory_dbl = double("Video Factory")
+      @channel_class_dbl = double("Channel Class")
+      @name = "jackisanerd"
+      @entries = [
+        {
+           id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
+           name:         @name,
+           published:    "2011-04-20T07:27:32+00:00",
+           title:        "jackisanerd",
+           yt_channelId: "UCTjqo_3046IXFFGZ_M5jedA",
+           uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"},
+        :video_entry1,
+        :video_entry2]
+      @channel_factory   = ChannelFactory.new(
+        entry_parser: @entry_parser_dbl,
+        video_factory: @video_factory_dbl,
+        channel_class: @channel_class_dbl)
+    end
+    it "builds a channel object" do
+      expect(@entry_parser_dbl).to receive(:run).and_return(@entries)
+      expect(@video_factory_dbl).to receive(:build).
+        and_return(:test_video).
+        exactly(2).times
+      expect(@channel_class_dbl).to receive(:new).
+        with({name: @name, video_list: [:test_video, :test_video]})
+      @channel_factory.build(:test)
+    end
+  end
+end
+
+describe Channel do
+  describe "#sync" do
+    before do
+      @video_dbl = double("Video")
+      @channel = Channel.new(
+        name: "test channel",
+        video_list: [@video_dbl, @video_dbl])
+    end
+    it "downloads all the new videos" do
+      expect(@video_dbl).to receive(:new?).exactly(2).times
+      @channel.sync
+    end
+  end
+end
+
 describe ChannelList do
   describe "#sync" do
     it "tells each channel to sync" do
@@ -123,42 +172,6 @@ describe Video do
   end
 end
 
-describe ChannelFactory do
-  describe "#build" do
-    before do
-      @entry_parser_dbl  = double("Entry Parser")
-      @video_factory_dbl = double("Video Factory")
-      @channel_class_dbl = double("Channel Class")
-      @name = "jackisanerd"
-      @entries = [
-        {
-           id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
-           name:         @name,
-           published:    "2011-04-20T07:27:32+00:00",
-           title:        "jackisanerd",
-           yt_channelId: "UCTjqo_3046IXFFGZ_M5jedA",
-           uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"},
-        :video_entry1,
-        :video_entry2]
-      @channel_factory   = ChannelFactory.new(
-        entry_parser: @entry_parser_dbl,
-        video_factory: @video_factory_dbl,
-        channel_class: @channel_class_dbl)
-    end
-    it "builds a channel object" do
-      expect(@entry_parser_dbl).to receive(:run).and_return(@entries)
-      expect(@video_factory_dbl).to receive(:build).
-        and_return(:test_video).
-        exactly(2).times
-      expect(@channel_class_dbl).to receive(:new).
-        with({name: @name, video_list: [:test_video, :test_video]})
-      @channel_factory.build(:test)
-    end
-  end
-end
-
-describe Channel do
-end
 
 describe Cache do
   before do
