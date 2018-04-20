@@ -266,9 +266,47 @@ describe PageDownloader do
     end
 
     it "downloads the page" do
+      expect(@page_downloader).to receive(:puts).
+       with("DOWNLOADING URL #{:test}")
       expect(@url_maker_dbl).to receive(:run).and_return(:page)
       expect(@http_dbl).to receive(:get).with(:page)
       page = @page_downloader.run(:test)
+    end
+  end
+end
+
+describe FeedFinder do
+  describe "#run" do
+    before do
+      @page_dlr_dbl = double("Page Downloader")
+      @file_dbl = double("File")
+      @test_feed = File.read("spec/fixtures/files/videos.xml")
+    end
+
+    context "when there is no cached feed" do
+      it "saves a new feed to the cache, reads it, and returns is content" do
+        feed_getter = FeedFinder.new(
+          page_downloader: @page_dlr_dbl,
+          path:            "testpath/%s")
+        expect(File).to receive(:open).and_yield(@file_dbl)
+        expect(@file_dbl).to receive(:write)
+        expect(@page_dlr_dbl).to receive(:run).with("user/videos.xml")
+        expect(File).to receive(:read).
+          with(File.expand_path("testpath/videos.xml"))
+        feed = feed_getter.run("user/videos.xml")
+      end
+    end
+
+    context "when there is an up to date cached feed" do
+      it "reads that file and returns its content" do
+        feed_getter = FeedFinder.new(
+          page_downloader: @page_dlr_dbl,
+          path:            "spec/fixtures/files/videos.xml")
+        expect(@page_dlr_dbl).to receive(:run).exactly(0).times
+        expect(File).to receive(:read).
+          with(File.expand_path("spec/fixtures/files/videos.xml"))
+        feed = feed_getter.run("user/videos.xml")
+      end
     end
   end
 end

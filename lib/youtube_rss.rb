@@ -118,6 +118,7 @@ class PageDownloader
   end
 
   def run(info)
+    puts "DOWNLOADING URL #{info}"
     http.get(url(info))
   end
 
@@ -129,8 +130,6 @@ class PageDownloader
     url_maker.run(info)
   end
 end
-
-
 
 class EntryParser
   def initialize(page_downloader: PageDownloader.new)
@@ -231,7 +230,7 @@ class Cache
   end
 
   def self.sync_time(channel_name:)
-    Time.parse(read[channel_name] || "2018-03-01")
+    Time.parse(read[channel_name] || "2018-04-18")
   end
 
   private_class_method
@@ -256,5 +255,31 @@ class VideoDownloader
 
   def run(id)
     Dir.chdir(File.expand_path(dl_path)) { system("youtube-dl #{id}") }
+  end
+end
+
+class FeedFinder
+  def initialize(page_downloader: PageDownloader.new,
+                 path: "~/.config/youtube-rss/feeds/%s")
+    @page_downloader = page_downloader
+    @path = path
+  end
+
+  def run(info)
+    id = info.split("/")[1]
+    if not File.file?(File.expand_path(@path % id))
+      File.open(File.expand_path(@path % id), "w") do |file|
+        file.write(download(info))
+      end
+    end
+    File.read(File.expand_path(@path % id))
+  end
+
+  private
+
+  attr_reader :page_downloader
+
+  def download(info)
+    page_downloader.run(info)
   end
 end
