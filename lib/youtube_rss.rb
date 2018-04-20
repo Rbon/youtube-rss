@@ -80,7 +80,7 @@ class URLMaker
   def run(line)
     line = line.split("#")[0].strip
     type, id = line.split("/")
-    feed_types[type.to_sym] % id
+    URI(feed_types[type.to_sym] % id)
   end
 
   private
@@ -93,17 +93,17 @@ end
 
 # Downloads a web page
 class PageDownloader
-  def initialize(url_maker: URLMaker.new)
+  def initialize(url_maker: URLMaker.new, http: Net::HTTP)
     @url_maker = url_maker
   end
 
   def run(info)
-    Net::HTTP.get(URI(url(info)))
+    http.get(url(info))
   end
 
   private
 
-  attr_reader :url_maker
+  attr_reader :url_maker, :http
 
   def url(info)
     url_maker.run(info)
