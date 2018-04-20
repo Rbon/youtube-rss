@@ -53,25 +53,54 @@ class ChannelList
 end
 
 class ChannelFactory
-  def initialize(args = {})
+  def initialize(entry_parser: EntryParser.new,
+                 channel_class: Channel,
+                 video_factory: VideoFactory.new)
 
+    @entry_parser  = entry_parser
+    @channel_class = channel_class
+    @video_factory = video_factory
+  end
+
+  def build(info)
+    entries = parse_entries(info)
+    channel_entry = entries[0]
+    video_list = make_video_list(entries.drop(1))
+    channel_class.new(
+      name: channel_entry[:name],
+      video_list: video_list)
   end
 
   private
 
-  def defaults
-    {}
+  attr_reader :entry_parser, :channel_class, :video_factory
+
+  def parse_entries(info)
+    entry_parser.run(info)
+  end
+
+  def make_video_list(entries)
+    entries.map { |entry| video_factory.build(entry) }
   end
 end
-#
-# An object which contains channel info, and a list of video objects
+
 class Channel
-  def new_videos
-    video_list.select(&:new?)
+  def initialize(name:, video_list:)
+    @name       = name
+    @video_list = video_list
   end
 
   def sync
+    puts name
+    new_videos.each(&:download)
+  end
 
+  private
+
+  attr_reader :name, :video_list
+
+  def new_videos
+    video_list.select(&:new?)
   end
 end
 
@@ -111,65 +140,7 @@ class PageDownloader
   end
 end
 
-class ChannelFactory
-  def initialize(entry_parser: EntryParser.new,
-                 channel_class: Channel,
-                 video_factory: VideoFactory.new)
 
-    @entry_parser  = entry_parser
-    @channel_class = channel_class
-    @video_factory = video_factory
-  end
-
-  def build(info)
-    entries = parse_entries(info)
-    channel_entry = entries[0]
-    video_list = make_video_list(entries.drop(1))
-    channel_class.new(
-      name: channel_entry[:name],
-      video_list: video_list)
-  end
-
-  private
-
-  attr_reader :entry_parser, :channel_class, :video_factory
-
-  def parse_entries(info)
-    entry_parser.run(info)
-  end
-
-  def make_video_list(entries)
-    entries.map { |entry| video_factory.build(entry) }
-  end
-end
-
-
-# # Makes a Channel class
-# class ChannelFactory
-  # def initialize(feed_parser: FeedParser.new)
-    # @feed_parser = feed_parser
-  # end
-
-  # def for(line)
-    # channel_info, video_info_list = feed(line)
-    # video_list = video_info_list.reverse.map do |video_info|
-      # Video.new(
-        # info: video_info,
-        # channel_name: channel_info["name"])
-    # end
-
-    # Channel.new(
-      # id: channel_info["yt:channelId"],
-      # name: channel_info["name"],
-      # video_list: video_list)
-  # end
-
-  # private
-
-  # def feed(line)
-    # @feed_parser.run(line)
-  # end
-# end
 
 class EntryParser
   def initialize(page_downloader: PageDownloader.new)
