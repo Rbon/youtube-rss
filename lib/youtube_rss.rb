@@ -7,7 +7,6 @@ require "json"
 
 # Runs the script
 class Main
-
   def initialize(args)
     # @dl_path = ARGV[0] || "."
     args = defaults.merge(args)
@@ -93,9 +92,21 @@ class URLMaker
 end
 
 # Downloads a web page
-class HTTPDownloader
-  def run(url)
-    Net::HTTP.get(URI(url))
+class PageDownloader
+  def initialize(url_maker: URLMaker.new)
+    @url_maker = url_maker
+  end
+
+  def run(info)
+    Net::HTTP.get(URI(url(info)))
+  end
+
+  private
+
+  attr_reader :url_maker
+
+  def url(info)
+    url_maker.run(info)
   end
 end
 
@@ -127,17 +138,22 @@ end
 # end
 
 class EntryParser
-  def initialize
-    @tag_regex = /<(?<tag>.*)>(?<value>.*)<.*>/
+  def initialize(page_downloader: PageDownloader.new)
+    @tag_regex       = /<(?<tag>.*)>(?<value>.*)<.*>/
+    @page_downloader = page_downloader
   end
 
-  def run(page)
-    entries(page).map { |entry| parse(entry) }
+  def run(info)
+    entries(page(info)).map { |entry| parse(entry) }
   end
 
   private
 
-  attr_reader :tag_regex
+  attr_reader :tag_regex, :page_downloader
+
+  def page(info)
+    page_downloader.run(info)
+  end
 
   def entries(page)
     page.split("<entry>")

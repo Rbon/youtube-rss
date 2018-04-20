@@ -131,6 +131,7 @@ end
 describe VideoDownloader do
   describe ".run" do
     it "downloads the video" do
+      ARGV[0] = nil # this is a hack
       id = "testid"
       downloader = VideoDownloader.new
       expect(downloader).to receive(:system).
@@ -143,7 +144,7 @@ end
 describe EntryParser do
   describe "#run" do
     before do
-      page = File.read("spec/fixtures/files/videos.xml")
+      @page = File.read("spec/fixtures/files/videos.xml")
       @channel_entry = {
         id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
         name:         "jackisanerd",
@@ -162,12 +163,15 @@ describe EntryParser do
         yt_channelId:      "UCTjqo_3046IXFFGZ_M5jedA",
         yt_videoId:        "Ah6xjqA0Cj0",
         uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
-      @entries = EntryParser.new.run(page)
+      @page_drl_dbl = double("Page Downloader")
+      @entry_parser = EntryParser.new(page_downloader: @page_drl_dbl)
     end
 
     it "returns an array of parsed entries" do
-      expect(@entries[0]).to eql(@channel_entry)
-      expect(@entries[1]).to eql(@video_entry)
+      expect(@page_drl_dbl).to receive(:run).and_return(@page)
+      entries = @entry_parser.run(:test)
+      expect(entries[0]).to eql(@channel_entry)
+      expect(entries[1]).to eql(@video_entry)
     end
   end
 end
