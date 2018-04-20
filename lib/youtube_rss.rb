@@ -7,10 +7,8 @@ require "json"
 
 # Runs the script
 class Main
-  def initialize(args)
-    # @dl_path = ARGV[0] || "."
-    args = defaults.merge(args)
-    @channel_list = args[:channel_list]
+  def initialize(channel_list: ChannelList.new)
+    @channel_list = channel_list
   end
 
   def run
@@ -20,17 +18,15 @@ class Main
   private
 
   attr_reader :channel_list
-
-  def defaults
-    {channel_list: ChannelList}
-  end
 end
 
 class ChannelList
-  def initialize(args)
-    args = defaults.merge(args)
-    @channel_factory = args[:channel_factory]
-    @channel_list    = args[:channel_list]
+  def initialize(channel_list: File.readlines(File.expand_path(
+                   "~/.config/youtube-rss/channel_list.txt")),
+                 channel_factory: ChannelFactory.new)
+
+    @channel_factory = channel_factory
+    @channel_list    = channel_list
   end
 
   def sync
@@ -43,12 +39,6 @@ class ChannelList
 
   def list
     channel_list.map { |info| channel_factory.for(info) }
-  end
-
-  def defaults
-    {channel_list: File.readlines(
-      File.expand_path("~/.config/youtube-rss/channel_list.txt")),
-    channel_factory: ChannelFactory.new}
   end
 end
 
