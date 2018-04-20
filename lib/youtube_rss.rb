@@ -95,6 +95,7 @@ end
 class PageDownloader
   def initialize(url_maker: URLMaker.new, http: Net::HTTP)
     @url_maker = url_maker
+    @http      = http
   end
 
   def run(info)

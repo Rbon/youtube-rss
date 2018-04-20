@@ -35,15 +35,15 @@ describe URLMaker do
       @old_name_format   = "user=test_user"
     end
 
-    context "with the old channel name type" do
-      it "returns a proper feed url" do
+    context "with the old username type" do
+      it "returns a proper user feed url" do
         url = URI(@url_start + @old_name_format).to_s
         expect(URLMaker.new.run("user/test_user").to_s).to eql(url)
       end
     end
 
     context "with the new channel id type" do
-      it "returns a proper feed url" do
+      it "returns a proper id feed url" do
         url = URI(@url_start + @new_id_format).to_s
         expect(URLMaker.new.run("channel/test_id").to_s).to eql(url)
       end
@@ -184,9 +184,11 @@ describe PageDownloader do
         url_maker: @url_maker_dbl,
         http: @http_dbl)
     end
-    it "downloads the page" do
-      page = @page_downloader.run(:test)
 
+    it "downloads the page" do
+      expect(@url_maker_dbl).to receive(:run).and_return(:page)
+      expect(@http_dbl).to receive(:get).with(:page)
+      page = @page_downloader.run(:test)
     end
   end
 end
