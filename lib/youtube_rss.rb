@@ -88,24 +88,14 @@ class URLMaker
 
   def feed_types
     {channel: "https://www.youtube.com/feeds/videos.xml?channel_id=%s",
-     user: "https://www.youtube.com/feeds/videos.xml?user=%s"}
+     user:    "https://www.youtube.com/feeds/videos.xml?user=%s"}
   end
 end
 
 # Downloads a web page
 class HTTPDownloader
-  def initialize(url_maker: URLMaker.new)
-    @url_maker = url_maker
-  end
-
-  def run(line)
-    Net::HTTP.get(URI(url(line)))
-  end
-
-  private
-
-  def url(line)
-    @url_maker.run(line)
+  def run(url)
+    Net::HTTP.get(URI(url))
   end
 end
 
@@ -136,51 +126,35 @@ end
   # end
 # end
 
-# Lazily parses xml files into the relevant info
-class FeedParser
-  def initialize(http_downloader: HTTPDownloader.new)
+class EntryParser
+  def initialize
     @tag_regex = /<(?<tag>.*)>(?<value>.*)<.*>/
-    @http_downloader = http_downloader
   end
 
-  def run(line)
-    info_list(entries(page(line)))
+  def run(page)
+    entries(page).map { |entry| parse(entry) }
   end
 
   private
 
-  def page(line)
-    @http_downloader.run(line)
+  attr_reader :tag_regex
+
+  def entries(page)
+    page.split("<entry>")
   end
 
-  def info_list(entries)
-    {channel_info: channel_info(entries),
-     video_info_list: video_info_list(entries)}
-  end
-
-  def channel_info(entries)
-    info(entries[0])
-  end
-
-  def video_info_list(entries)
-    entries.drop(1).map { |entry| info(entry) }
-  end
-
-  def entries(feed)
-    feed.split("<entry>")
-  end
-
-  def info(entry)
+  def parse(entry)
     output = {}
-    entry.lines do |line|
-      @tag_regex.match(line) { |match| output[match[:tag]] = match[:value] }
+    entry.lines.map do |line|
+      tag_regex.match(line) do |match|
+        tag = match[:tag].gsub(":", "_").to_sym
+        output[tag] = match[:value]
+      end
     end
     output
   end
 end
 
-
-# An object which contains video info, and some methods related to downloading
 class Video
   attr_reader :id, :published, :title, :description, :channel_name,
     :downloader, :cache

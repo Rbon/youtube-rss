@@ -28,7 +28,7 @@ describe ChannelList do
 end
 
 describe URLMaker do
-  describe ".download" do
+  describe "#run" do
     before do
       @id = "test_id"
       @fake_page = File.read("spec/fixtures/files/videos.xml")
@@ -48,29 +48,6 @@ describe URLMaker do
         expect(URLMaker.new.run(url)).
           to eql("https://www.youtube.com/feeds/videos.xml?channel_id=test_id")
       end
-    end
-  end
-end
-
-describe FeedParser do
-  describe ".parse" do
-    before do
-      @page = File.read("spec/fixtures/files/videos.xml")
-      @dlr_double = double("HTTPDownloader")
-      @feed_parser = FeedParser.new(http_downloader: @dlr_double)
-    end
-
-    it "returns a hash with channel info and video info" do
-      expect(@dlr_double).to receive(:run).
-        and_return(@page)
-      @parsed_feed = @feed_parser.run("user/testuser")
-      channel_info = @parsed_feed[:channel_info]
-      expect(channel_info["name"]).to eql("jackisanerd")
-      expect(channel_info["yt:channelId"]).to eql("UCTjqo_3046IXFFGZ_M5jedA")
-      video_entry = @parsed_feed[:video_info_list][0]
-      expect(video_entry["title"]).to eql("Day 4")
-      expect(video_entry["yt:videoId"]).to eql("Ah6xjqA0Cj0")
-      expect(video_entry["published"]).to eql("2018-03-03T05:59:29+00:00")
     end
   end
 end
@@ -159,6 +136,38 @@ describe VideoDownloader do
       expect(downloader).to receive(:system).
         with("youtube-dl #{id}")
       downloader.run(id)
+    end
+  end
+end
+
+describe EntryParser do
+  describe "#run" do
+    before do
+      page = File.read("spec/fixtures/files/videos.xml")
+      @channel_entry = {
+        id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
+        name:         "jackisanerd",
+        published:    "2011-04-20T07:27:32+00:00",
+        title:        "jackisanerd",
+        yt_channelId: "UCTjqo_3046IXFFGZ_M5jedA",
+        uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
+      @video_entry = {
+        id:                "yt:video:Ah6xjqA0Cj0",
+        media_description: "Not the best day but maybe tomorrow will be better",
+        media_title:       "Day 4",
+        name:              "jackisanerd",
+        published:         "2018-03-03T05:59:29+00:00",
+        title:             "Day 4",
+        updated:           "2018-03-03T19:57:10+00:00",
+        yt_channelId:      "UCTjqo_3046IXFFGZ_M5jedA",
+        yt_videoId:        "Ah6xjqA0Cj0",
+        uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
+      @entries = EntryParser.new.run(page)
+    end
+
+    it "returns an array of parsed entries" do
+      expect(@entries[0]).to eql(@channel_entry)
+      expect(@entries[1]).to eql(@video_entry)
     end
   end
 end
