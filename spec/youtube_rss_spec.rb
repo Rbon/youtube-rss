@@ -71,7 +71,7 @@ describe ChannelList do
     end
 
     it "tells each channel to sync" do
-      expect(@channel_factory_dbl).to receive(:for).
+      expect(@channel_factory_dbl).to receive(:build).
         exactly(2).times.
         and_return(@channel_dbl)
       expect(@channel_dbl).to receive(:sync).exactly(2).times

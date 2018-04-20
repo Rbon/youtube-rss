@@ -38,7 +38,7 @@ class ChannelList
   attr_reader :channel_list, :channel_factory
 
   def list
-    channel_list.map { |info| channel_factory.for(info) }
+    channel_list.map { |info| channel_factory.build(info) }
   end
 end
 
