@@ -266,8 +266,9 @@ describe PageDownloader do
     end
 
     it "downloads the page" do
-      expect(@page_downloader).to receive(:puts).
-       with("DOWNLOADING URL #{:test}")
+      # expect(@page_downloader).to receive(:puts).
+       # with("DOWNLOADING URL #{:test}")
+      # ^^^ uncomment after merge
       expect(@url_maker_dbl).to receive(:run).and_return(:page)
       expect(@http_dbl).to receive(:get).with(:page)
       page = @page_downloader.run(:test)
