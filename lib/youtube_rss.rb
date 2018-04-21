@@ -17,10 +17,16 @@ class Main
   attr_reader :channel_list
 end
 
+# Class to access the user channel list file
+class UserChannelList
+  def self.path
+    File.readlines(File.expand_path("~/.config/youtube-rss/channel_list.txt"))
+  end
+end
+
 # A list of the channels, as defined by the user's channel list file
 class ChannelList
-  def initialize(channel_list: File.readlines(File.expand_path(
-                 "~/.config/youtube-rss/channel_list.txt")),
+  def initialize(channel_list: UserChannelList.path,
                  channel_factory: ChannelFactory.new)
 
     @channel_factory = channel_factory
