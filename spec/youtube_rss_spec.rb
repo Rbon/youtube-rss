@@ -2,158 +2,180 @@ require "youtube_rss"
 
 describe Main do
   describe "#run" do
-    before do
-      @channel_dbl = double("Channel")
-      @video_dbl = double("Video")
-      @feed = File.read("spec/fixtures/files/videos.xml")
-    end
-
-    # this should be much better
-    it "runs the script" do
-      expect(File).to receive(:readlines).and_return(["test"])
-      main = Main.new
-
-      expect(FeedGenerator).to receive(:run)
-      expect(HTTPDownloader).to receive(:run).and_return(@feed)
-      vid_dlr_dbl = double("VideoDownloader")
-      expect(vid_dlr_dbl).to receive(:run).exactly(15).times
-      expect(VideoDownloader).to receive(:new).exactly(15).times.
-        and_return(vid_dlr_dbl)
-      expect(Cache).to receive(:update).exactly(15).times
-      expect(Cache).to receive(:sync_time).exactly(15).times.
-        and_return(Time.parse("2008-01-01"))
-      expect(main).to receive(:puts)
-      main.run
-    end
-  end
-end
-
-describe FeedGenerator do
-  describe ".download" do
-    before do
-      @id = "test_id"
-      @fake_page = File.read("spec/fixtures/files/videos.xml")
-    end
-
-    context "with the old channel name type" do
-      it "returns a proper feed url" do
-        url = "user/#{@id}"
-        expect(FeedGenerator.run(url)).
-          to eql("https://www.youtube.com/feeds/videos.xml?user=test_id")
-      end
-    end
-
-    context "with the new channel id type" do
-      it "returns a proper feed url" do
-        url = "channel/#{@id}"
-        expect(FeedGenerator.run(url)).
-          to eql("https://www.youtube.com/feeds/videos.xml?channel_id=test_id")
-      end
-    end
-  end
-end
-
-describe FeedParser do
-  describe ".parse" do
-    before do
-      @feed = File.read("spec/fixtures/files/videos.xml")
-      @parsed_feed = FeedParser.parse(@feed)
-    end
-
-    it "returns a hash with channel info" do
-      channel_info = @parsed_feed[:channel_info]
-      expect(channel_info["name"]).to eql("jackisanerd")
-      expect(channel_info["yt:channelId"]).to eql("UCTjqo_3046IXFFGZ_M5jedA")
-    end
-
-    it "returns a hash with video info" do
-      video_entry = @parsed_feed[:video_info_list][0]
-      expect(video_entry["title"]).to eql("Day 4")
-      expect(video_entry["yt:videoId"]).to eql("Ah6xjqA0Cj0")
-      expect(video_entry["published"]).to eql("2018-03-03T05:59:29+00:00")
+    it "tells the channel list to sync" do
+      # feed = File.read("spec/fixtures/files/videos.xml")
+      channel_list_dbl = double("Channel List")
+      expect(channel_list_dbl).to receive(:sync)
+      Main.new(channel_list: channel_list_dbl).run
     end
   end
 end
 
 describe ChannelFactory do
-  describe ".for" do
+  describe "#build" do
     before do
-      channel_info = {"yt:channelId" => "test chanid", "name" => "test channel"}
-      video_info_list = [
+      @entry_parser_dbl  = double("Entry Parser")
+      @video_factory_dbl = double("Video Factory")
+      @channel_class_dbl = double("Channel Class")
+      @name = "jackisanerd"
+      @entries = [
         {
-          "title" => "test video 2", "yt:videoId" => "test videoid 2",
-          "published" => "2008-01-01", "description" => "desc1"
-        },
-        {
-          "title" => "test video 1", "yt:videoId" => "test videoid 1",
-          "published" => "1999-01-01", "description" => "desc2"
-        }
-      ]
-      cache_file = double("Cache File")
-      @channel = ChannelFactory.for(
-        channel_info: channel_info,
-        video_info_list: video_info_list)
+           id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
+           name:         @name,
+           published:    "2011-04-20T07:27:32+00:00",
+           title:        "jackisanerd",
+           yt_channelId: "UCTjqo_3046IXFFGZ_M5jedA",
+           uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"},
+        :video_entry1,
+        :video_entry2]
+      @channel_factory   = ChannelFactory.new(
+        entry_parser: @entry_parser_dbl,
+        video_factory: @video_factory_dbl,
+        channel_class: @channel_class_dbl)
+    end
+    it "builds a channel object" do
+      expect(@entry_parser_dbl).to receive(:run).and_return(@entries)
+      expect(@video_factory_dbl).to receive(:build).
+        and_return(:test_video).
+        exactly(2).times
+      expect(@channel_class_dbl).to receive(:new).
+        with({name: @name, video_list: [:test_video, :test_video]})
+      @channel_factory.build(:test)
+    end
+  end
+end
+
+describe Channel do
+  describe "#sync" do
+    before do
+      @video_dbl = double("Video")
+      @channel = Channel.new(
+        name: "test channel",
+        video_list: [@video_dbl, @video_dbl])
+    end
+    it "downloads all the new videos" do
+      expect(@video_dbl).to receive(:new?).exactly(2).times
+      @channel.sync
+    end
+  end
+end
+
+describe ChannelList do
+  describe "#sync" do
+    before do
+      @channel_dbl = double("Channel")
+      @channel_factory_dbl = double("Channel Factory")
+      @channel_list = ChannelList.new(
+        channel_factory: @channel_factory_dbl,
+        channel_list: ["user/testuser1", "user/testuser2"])
     end
 
-    it "returns a channel object" do
-      expect(@channel.name).to eql("test channel")
-      expect(@channel.id).to eql("test chanid")
+    it "tells each channel to sync" do
+      expect(@channel_factory_dbl).to receive(:build).
+        exactly(2).times.
+        and_return(@channel_dbl)
+      expect(@channel_dbl).to receive(:sync).exactly(2).times
+      @channel_list.sync
+    end
+  end
+end
+
+describe URLMaker do
+  describe "#run" do
+    before do
+      @url_start = "https://www.youtube.com/feeds/videos.xml?"
+      @new_id_format     = "channel_id=test_id"
+      @old_name_format   = "user=test_user"
     end
 
-    it "returns a channel object with a list of videos" do
-      expect(@channel.video_list.length).to eql(2)
-      video = @channel.video_list[0]
-      expect(video.title).to eql("test video 1")
-      expect(video.id).to eql("test videoid 1")
+    context "with the old username type" do
+      it "returns a proper user feed url" do
+        url = URI(@url_start + @old_name_format).to_s
+        expect(URLMaker.new.run("user/test_user").to_s).to eql(url)
+      end
+    end
+
+    context "with the new channel id type" do
+      it "returns a proper id feed url" do
+        url = URI(@url_start + @new_id_format).to_s
+        expect(URLMaker.new.run("channel/test_id").to_s).to eql(url)
+      end
+    end
+  end
+end
+
+describe VideoFactory do
+  describe "#build" do
+    before do
+      @video_class_dbl = double("Video Class")
+      @video_factory = VideoFactory.new(video_class: @video_class_dbl)
+      @entry = {
+        id:                "yt:video:Ah6xjqA0Cj0",
+        media_description: "Not the best day but maybe tomorrow will be better",
+        media_title:       "Day 4",
+        name:              "jackisanerd",
+        published:         "2018-03-03T05:59:29+00:00",
+        title:             "Day 4",
+        updated:           "2018-03-03T19:57:10+00:00",
+        yt_channelId:      "UCTjqo_3046IXFFGZ_M5jedA",
+        yt_videoId:        "Ah6xjqA0Cj0",
+        uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
+      @video_info = {
+        id: "Ah6xjqA0Cj0", title: "Day 4",
+        published: "2018-03-03T05:59:29+00:00", channel_name: "jackisanerd"}
+    end
+
+    it "builds a youtube object" do
+      expect(@video_class_dbl).to receive(:new).with(@video_info)
+      @video_factory.build(@entry)
     end
   end
 end
 
 describe Video do
-  describe "#new?" do
-    before(:all) do
-      @info = {"yt:videoId" => "test video"}
-    end
+  before do
+    @cache_dbl      = double("Cache")
+    @downloader_dbl = double("Video Downloader")
+    @id = "testid"
+    @time = "2000-01-01"
+    @channel_name = "test channel name"
+    @video = Video.new(
+      id:           @id,
+      channel_name: @channel_name,
+      title:        "a test video",
+      cache:        @cache_dbl,
+      downloader:   @downloader_dbl,
+      published:    @time)
+  end
 
+  describe "#new?" do
     context "when video is new" do
       it "returns true" do
-        @info["published"] = "2000-01-01"
-        video = Video.new(info: @info, channel_name: "")
-        expect(Cache).to receive(:sync_time) { Time.parse("1999-01-01") }
-        expect(video.new?).to be true
+        expect(@cache_dbl).to receive(:sync_time).
+          and_return(Time.parse("1999-01-01"))
+        expect(@video.new?).to be true
       end
     end
 
     context "when video is old" do
       it "returns false" do
-        @info["published"] = "1999-01-01"
-        video = Video.new(info: @info, channel_name: "")
-        expect(Cache).to receive(:sync_time) { Time.parse("2000-01-01") }
-        expect(video.new?).to be false
+        expect(@cache_dbl).to receive(:sync_time).
+          and_return(Time.parse("2008-01-01"))
+        expect(@video.new?).to be false
       end
     end
   end
 
   describe "#download" do
     it "downloads a video" do
-      id = "testid"
-      pub_time = "2017-03-01"
-      info = {"yt:videoId" => id, "published" => pub_time}
-      downloader_dbl = double("Downloader")
-      expect(Cache).to receive(:update)
-      video = Video.new(
-        info: info,
-        channel_name: nil,
-        downloader: downloader_dbl)
-      expect(downloader_dbl).to receive(:run).
-        with(id: id)
-      video.download
+      expect(@downloader_dbl).to receive(:run).with(@id)
+      expect(@cache_dbl).to receive(:update).
+        with(time: Time.parse(@time), channel_name: @channel_name)
+      @video.download
     end
   end
 end
 
-describe Channel do
-end
 
 describe Cache do
   before do
@@ -168,10 +190,7 @@ describe Cache do
       fake_parsed_json = {"foo" => "1", "bar" => "2", @channel_name => @time}
       expect(File).to receive(:read).and_return("{#{fake_json}}")
       file_dbl = double("File")
-      expect(file_dbl).to receive(:close)
       expect(File).to receive(:open).and_return(file_dbl)
-      expect(JSON).to receive(:dump).
-        with(fake_parsed_json, anything)
       Cache.update(time: @time, channel_name: @channel_name)
     end
 
@@ -181,10 +200,7 @@ describe Cache do
         fake_parsed_json = {"foo" => "1", @channel_name => @time}
         expect(File).to receive(:read).and_return("{#{fake_json}}")
         file_dbl = double("File")
-        expect(file_dbl).to receive(:close)
         expect(File).to receive(:open).and_return(file_dbl)
-        expect(JSON).to receive(:dump).
-          with(fake_parsed_json, anything)
         Cache.update(time: @time, channel_name: @channel_name)
       end
     end
@@ -210,23 +226,175 @@ end
 
 describe SystemCaller do
   describe ".run" do
-    context "when the command exits with anything but 0" do
-      it "complains and dies" do
-        expect(SystemCaller).to receive(:system).and_return(false)
-        expect(SystemCaller).to receive(:puts).with("ERROR")
-        expect(SystemCaller).to receive(:exit)
-        SystemCaller.run("probably-not-a-program")
+    it "downloads the video" do
+      ARGV[0] = nil # this is a hack
+      id = "testid"
+      downloader = VideoDownloader.new
+      expect(downloader).to receive(:system).
+        with("youtube-dl #{id}")
+      downloader.run(id)
+    end
+  end
+end
+
+describe EntryParser do
+  describe "#run" do
+    before do
+      @page = File.read("spec/fixtures/files/videos.xml")
+      @channel_entry = {
+        id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
+        name:         "jackisanerd",
+        published:    "2011-04-20T07:27:32+00:00",
+        title:        "jackisanerd",
+        yt_channelId: "UCTjqo_3046IXFFGZ_M5jedA",
+        uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
+      @video_entry = {
+        id:                "yt:video:Ah6xjqA0Cj0",
+        media_description: "Not the best day but maybe tomorrow will be better",
+        media_title:       "Day 4",
+        name:              "jackisanerd",
+        published:         "2018-03-03T05:59:29+00:00",
+        title:             "Day 4",
+        updated:           "2018-03-03T19:57:10+00:00",
+        yt_channelId:      "UCTjqo_3046IXFFGZ_M5jedA",
+        yt_videoId:        "Ah6xjqA0Cj0",
+        uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
+      @page_drl_dbl = double("Page Downloader")
+      @entry_parser = EntryParser.new(page_downloader: @page_drl_dbl)
+    end
+
+    it "returns an array of parsed entries" do
+      expect(@page_drl_dbl).to receive(:run).and_return(@page)
+      entries = @entry_parser.run(:test)
+      expect(entries[0]).to eql(@channel_entry)
+      expect(entries[1]).to eql(@video_entry)
+    end
+  end
+end
+
+describe PageDownloader do
+  describe "#run" do
+    before do
+      @url_maker_dbl = double("URL Maker")
+      @http_dbl = double("HTTP")
+      @page_downloader = PageDownloader.new(
+        url_maker: @url_maker_dbl,
+        http: @http_dbl)
+    end
+
+    it "downloads the page" do
+      # expect(@page_downloader).to receive(:puts).
+       # with("DOWNLOADING URL #{:test}")
+      # ^^^ uncomment after merge
+      expect(@url_maker_dbl).to receive(:run).and_return(:page)
+      expect(@http_dbl).to receive(:get).with(:page)
+      page = @page_downloader.run(:test)
+    end
+  end
+end
+
+describe FeedFinder do
+  describe "#run" do
+    before do
+      @page_dlr_dbl = double("Page Downloader")
+      @file_obj_dbl = double("File Object")
+      @file_dbl     = double("File")
+      @test_feed    = File.read("spec/fixtures/files/videos.xml")
+      @old_time     = Time.now - (13 * 3600)
+    end
+
+    context "when there is no cached feed" do
+      it "saves a new feed to the cache, reads it, and returns its content" do
+        feed_getter = FeedFinder.new(
+          page_downloader: @page_dlr_dbl,
+          path:            "testpath/%s",
+          file:            @file_dbl)
+        allow(@file_dbl).to receive(:expand_path).
+          and_return(:path_of_file)
+        expect(@file_dbl).to receive(:file?).and_return(false)
+        expect(@file_dbl).to receive(:open).
+          with(:path_of_file, "w").
+          and_yield(@file_obj_dbl)
+        expect(@page_dlr_dbl).to receive(:run).with("user/videos.xml").
+          and_return(:result)
+        expect(@file_obj_dbl).to receive(:write).with(:result)
+        expect(@file_dbl).to receive(:read).
+          with(:path_of_file).
+          and_return(:the_file)
+        feed = feed_getter.run("user/videos.xml")
+        expect(feed).to eql(:the_file)
       end
     end
-    context "when the command exits with 0" do
-      before do
-        @command = "a-test-command"
-      end
 
-      it "calls the command" do
-        expect(SystemCaller).to receive(:system).and_return(true)
-        expect(SystemCaller).to_not receive(:exit)
-        SystemCaller.run("definitely-a-program")
+    context "when there is an up to date cached feed" do
+      it "reads that file and returns its content" do
+        feed_getter = FeedFinder.new(
+          page_downloader: @page_dlr_dbl,
+          path:            "testpath/%s",
+          file:            @file_dbl)
+        allow(@file_dbl).to receive(:expand_path).
+          and_return(:path_of_file)
+        expect(@file_dbl).to receive(:zero?).
+          with(:path_of_file).
+          and_return(false)
+        expect(@file_dbl).to receive(:file?).and_return(true)
+        expect(@file_dbl).to receive(:mtime).and_return(Time.now)
+        expect(@file_dbl).to receive(:read).
+          with(:path_of_file).
+          and_return(:the_file)
+        feed = feed_getter.run("user/videos.xml")
+        expect(feed).to eql(:the_file)
+      end
+    end
+
+    context "when the file in cache is old" do
+      it "overwrites that file with a new download, and returns its content" do
+        feed_getter = FeedFinder.new(
+          page_downloader: @page_dlr_dbl,
+          path:            "testpath/%s",
+          file:            @file_dbl)
+        allow(@file_dbl).to receive(:expand_path).
+          and_return(:path_of_file)
+        expect(@file_dbl).to receive(:file?).and_return(true)
+        expect(@file_dbl).to receive(:mtime).and_return(@old_time)
+        expect(@file_dbl).to receive(:open).
+          with(:path_of_file, "w").
+          and_yield(@file_obj_dbl)
+        expect(@page_dlr_dbl).to receive(:run).with("user/videos.xml").
+          and_return(:result)
+        expect(@file_obj_dbl).to receive(:write).with(:result)
+        expect(@file_dbl).to receive(:read).
+          with(:path_of_file).
+          and_return(:the_file)
+        feed = feed_getter.run("user/videos.xml")
+        expect(feed).to eql(:the_file)
+      end
+    end
+
+    context "when the file exists and is new, but is empty" do
+      it "overwrites that file with a new download, and returns its content" do
+        feed_getter = FeedFinder.new(
+          page_downloader: @page_dlr_dbl,
+          path:            "testpath/%s",
+          file:            @file_dbl)
+        allow(@file_dbl).to receive(:expand_path).
+          and_return(:path_of_file)
+        expect(@file_dbl).to receive(:file?).and_return(true)
+        expect(@file_dbl).to receive(:mtime).and_return(Time.now)
+        expect(@file_dbl).to receive(:zero?).
+          with(:path_of_file).
+          and_return(true)
+        expect(@file_dbl).to receive(:open).
+          with(:path_of_file, "w").
+          and_yield(@file_obj_dbl)
+        expect(@page_dlr_dbl).to receive(:run).with("user/videos.xml").
+          and_return(:result)
+        expect(@file_obj_dbl).to receive(:write).with(:result)
+        expect(@file_dbl).to receive(:read).
+          with(:path_of_file).
+          and_return(:the_file)
+        feed = feed_getter.run("user/videos.xml")
+        expect(feed).to eql(:the_file)
       end
     end
   end
