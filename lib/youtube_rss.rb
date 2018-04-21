@@ -132,7 +132,7 @@ class PageDownloader
 end
 
 class EntryParser
-  def initialize(page_downloader: PageDownloader.new)
+  def initialize(page_downloader: FeedFinder.new)
     @tag_regex       = /<(?<tag>.*)>(?<value>.*)<.*>/
     @page_downloader = page_downloader
   end
@@ -260,26 +260,44 @@ end
 
 class FeedFinder
   def initialize(page_downloader: PageDownloader.new,
-                 path: "~/.config/youtube-rss/feeds/%s")
+                 path: "~/.config/youtube-rss/feeds/%s",
+                 file: File)
+
     @page_downloader = page_downloader
-    @path = path
+    @path            = path
+    @file            = file
   end
 
   def run(info)
-    id = info.split("/")[1]
-    if not File.file?(File.expand_path(@path % id))
-      File.open(File.expand_path(@path % id), "w") do |file|
-        file.write(download(info))
-      end
+    id = uncomment(info).split("/")[1]
+    if not file.file?(file.expand_path(path % id))
+      download(info)
+    elsif file_is_old?(info)
+      download(info)
+    elsif file.zero?(file.expand_path(path % id))
+      download(info)
     end
-    File.read(File.expand_path(@path % id))
+    puts "ID: #{id}"
+    file.read(file.expand_path(path % id))
   end
 
   private
 
-  attr_reader :page_downloader
+  attr_reader :page_downloader, :path, :file
+
+  def uncomment(info)
+    info.split("#")[0].strip
+  end
+
+  def file_is_old?(info)
+    id = uncomment(info).split("/")[1]
+    (Time.now - file.mtime(file.expand_path(path % id))) / 3600 > 12
+  end
 
   def download(info)
-    page_downloader.run(info)
+    id = uncomment(info).split("/")[1]
+    file.open(file.expand_path(path % id), "w") do |f|
+      f.write(page_downloader.run(info))
+    end
   end
 end

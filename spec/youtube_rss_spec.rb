@@ -279,21 +279,32 @@ describe FeedFinder do
   describe "#run" do
     before do
       @page_dlr_dbl = double("Page Downloader")
-      @file_dbl = double("File")
-      @test_feed = File.read("spec/fixtures/files/videos.xml")
+      @file_obj_dbl = double("File Object")
+      @file_dbl     = double("File")
+      @test_feed    = File.read("spec/fixtures/files/videos.xml")
+      @old_time     = Time.now - (13 * 3600)
     end
 
     context "when there is no cached feed" do
-      it "saves a new feed to the cache, reads it, and returns is content" do
+      it "saves a new feed to the cache, reads it, and returns its content" do
         feed_getter = FeedFinder.new(
           page_downloader: @page_dlr_dbl,
-          path:            "testpath/%s")
-        expect(File).to receive(:open).and_yield(@file_dbl)
-        expect(@file_dbl).to receive(:write)
-        expect(@page_dlr_dbl).to receive(:run).with("user/videos.xml")
-        expect(File).to receive(:read).
-          with(File.expand_path("testpath/videos.xml"))
+          path:            "testpath/%s",
+          file:            @file_dbl)
+        allow(@file_dbl).to receive(:expand_path).
+          and_return(:path_of_file)
+        expect(@file_dbl).to receive(:file?).and_return(false)
+        expect(@file_dbl).to receive(:open).
+          with(:path_of_file, "w").
+          and_yield(@file_obj_dbl)
+        expect(@page_dlr_dbl).to receive(:run).with("user/videos.xml").
+          and_return(:result)
+        expect(@file_obj_dbl).to receive(:write).with(:result)
+        expect(@file_dbl).to receive(:read).
+          with(:path_of_file).
+          and_return(:the_file)
         feed = feed_getter.run("user/videos.xml")
+        expect(feed).to eql(:the_file)
       end
     end
 
@@ -301,11 +312,71 @@ describe FeedFinder do
       it "reads that file and returns its content" do
         feed_getter = FeedFinder.new(
           page_downloader: @page_dlr_dbl,
-          path:            "spec/fixtures/files/videos.xml")
-        expect(@page_dlr_dbl).to receive(:run).exactly(0).times
-        expect(File).to receive(:read).
-          with(File.expand_path("spec/fixtures/files/videos.xml"))
+          path:            "testpath/%s",
+          file:            @file_dbl)
+        allow(@file_dbl).to receive(:expand_path).
+          and_return(:path_of_file)
+        expect(@file_dbl).to receive(:zero?).
+          with(:path_of_file).
+          and_return(false)
+        expect(@file_dbl).to receive(:file?).and_return(true)
+        expect(@file_dbl).to receive(:mtime).and_return(Time.now)
+        expect(@file_dbl).to receive(:read).
+          with(:path_of_file).
+          and_return(:the_file)
         feed = feed_getter.run("user/videos.xml")
+        expect(feed).to eql(:the_file)
+      end
+    end
+
+    context "when the file in cache is old" do
+      it "overwrites that file with a new download, and returns its content" do
+        feed_getter = FeedFinder.new(
+          page_downloader: @page_dlr_dbl,
+          path:            "testpath/%s",
+          file:            @file_dbl)
+        allow(@file_dbl).to receive(:expand_path).
+          and_return(:path_of_file)
+        expect(@file_dbl).to receive(:file?).and_return(true)
+        expect(@file_dbl).to receive(:mtime).and_return(@old_time)
+        expect(@file_dbl).to receive(:open).
+          with(:path_of_file, "w").
+          and_yield(@file_obj_dbl)
+        expect(@page_dlr_dbl).to receive(:run).with("user/videos.xml").
+          and_return(:result)
+        expect(@file_obj_dbl).to receive(:write).with(:result)
+        expect(@file_dbl).to receive(:read).
+          with(:path_of_file).
+          and_return(:the_file)
+        feed = feed_getter.run("user/videos.xml")
+        expect(feed).to eql(:the_file)
+      end
+    end
+
+    context "when the file exists and is new, but is empty" do
+      it "overwrites that file with a new download, and returns its content" do
+        feed_getter = FeedFinder.new(
+          page_downloader: @page_dlr_dbl,
+          path:            "testpath/%s",
+          file:            @file_dbl)
+        allow(@file_dbl).to receive(:expand_path).
+          and_return(:path_of_file)
+        expect(@file_dbl).to receive(:file?).and_return(true)
+        expect(@file_dbl).to receive(:mtime).and_return(Time.now)
+        expect(@file_dbl).to receive(:zero?).
+          with(:path_of_file).
+          and_return(true)
+        expect(@file_dbl).to receive(:open).
+          with(:path_of_file, "w").
+          and_yield(@file_obj_dbl)
+        expect(@page_dlr_dbl).to receive(:run).with("user/videos.xml").
+          and_return(:result)
+        expect(@file_obj_dbl).to receive(:write).with(:result)
+        expect(@file_dbl).to receive(:read).
+          with(:path_of_file).
+          and_return(:the_file)
+        feed = feed_getter.run("user/videos.xml")
+        expect(feed).to eql(:the_file)
       end
     end
   end
