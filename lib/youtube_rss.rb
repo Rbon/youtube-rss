@@ -115,7 +115,7 @@ class PageDownloader
   end
 
   def run(info)
-    # puts "DOWNLOADING FEED #{info}" # uncomment after merge
+    puts "DOWNLOADING FEED #{info}"
     http.get(url(info))
   end
 
@@ -129,8 +129,7 @@ class PageDownloader
 end
 
 class EntryParser
-  # def initialize(page_downloader: FeedFinder.new) # uncomment after merge
-  def initialize(page_downloader: PageDownloader.new) # remove after merge
+  def initialize(page_downloader: FeedFinder.new)
     @tag_regex       = /<(?<tag>.*)>(?<value>.*)<.*>/
     @page_downloader = page_downloader
   end
@@ -243,17 +242,16 @@ class Cache
 
 end
 
-# Calls SystemCaller with a youtube-dl command
 class VideoDownloader
-  attr_reader :dl_path
-
-  def initialize
-    @dl_path = ARGV[0] || "."
+  def run(id)
+    SystemCaller.run("youtube-dl \"https://youtu.be/#{id}\"")
   end
 end
 
-  def run(id)
-    Dir.chdir(File.expand_path(dl_path)) { system("youtube-dl #{id}") }
+class SystemCaller
+  def self.run(command)
+    dl_path = ARGV[0] || "."
+    Dir.chdir(File.expand_path(dl_path)) { system(command) }
   end
 end
 

@@ -218,7 +218,7 @@ describe VideoDownloader do
         id = "testid"
         expect(SystemCaller).to receive(:run).
           with("youtube-dl \"https://youtu.be/#{id}\"")
-        @downloader.run(id: id)
+        @downloader.run(id)
       end
     end
   end
@@ -228,11 +228,10 @@ describe SystemCaller do
   describe ".run" do
     it "downloads the video" do
       ARGV[0] = nil # this is a hack
-      id = "testid"
-      downloader = VideoDownloader.new
-      expect(downloader).to receive(:system).
-        with("youtube-dl #{id}")
-      downloader.run(id)
+      command = "this is a command"
+      expect(SystemCaller).to receive(:system).
+        with(command)
+      SystemCaller.run(command)
     end
   end
 end
@@ -283,9 +282,8 @@ describe PageDownloader do
     end
 
     it "downloads the page" do
-      # expect(@page_downloader).to receive(:puts).
-       # with("DOWNLOADING URL #{:test}")
-      # ^^^ uncomment after merge
+      expect(@page_downloader).to receive(:puts).
+       with("DOWNLOADING FEED #{:test}")
       expect(@url_maker_dbl).to receive(:run).and_return(:page)
       expect(@http_dbl).to receive(:get).with(:page)
       page = @page_downloader.run(:test)
