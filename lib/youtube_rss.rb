@@ -118,7 +118,7 @@ class PageDownloader
   end
 
   def run(info)
-    puts "DOWNLOADING URL #{info}"
+    # puts "DOWNLOADING FEED #{info}" # uncomment after merge
     http.get(url(info))
   end
 
@@ -132,7 +132,8 @@ class PageDownloader
 end
 
 class EntryParser
-  def initialize(page_downloader: FeedFinder.new)
+  # def initialize(page_downloader: FeedFinder.new) # uncomment after merge
+  def initialize(page_downloader: PageDownloader.new) # remove after merge
     @tag_regex       = /<(?<tag>.*)>(?<value>.*)<.*>/
     @page_downloader = page_downloader
   end
@@ -277,7 +278,6 @@ class FeedFinder
     elsif file.zero?(file.expand_path(path % id))
       download(info)
     end
-    puts "ID: #{id}"
     file.read(file.expand_path(path % id))
   end
 
