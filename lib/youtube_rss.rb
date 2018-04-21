@@ -180,11 +180,12 @@ class VideoFactory
   end
 
   def build(entry)
-    video_class.new(
+    info = {
       id:           entry[:yt_videoId],
       title:        entry[:title],
       published:    entry[:published],
-      channel_name: entry[:name])
+      channel_name: entry[:name]}
+    video_class.new(info: info)
   end
 
   private
@@ -194,13 +195,11 @@ end
 
 # An object which contains info about a youtube video
 class Video
-  def initialize(id:, title:, published:, channel_name:,
-                 downloader: VideoDownloader.new, cache: Cache)
-
-    @id           = id
-    @title        = title
-    @published    = Time.parse(published)
-    @channel_name = channel_name
+  def initialize(info:, downloader: VideoDownloader.new, cache: Cache)
+    @id           = info[:id]
+    @title        = info[:title]
+    @published    = Time.parse(info[:published])
+    @channel_name = info[:channel_name]
     @downloader   = downloader
     @cache        = cache
   end

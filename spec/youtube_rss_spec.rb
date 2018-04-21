@@ -127,7 +127,7 @@ describe VideoFactory do
     end
 
     it "builds a youtube object" do
-      expect(@video_class_dbl).to receive(:new).with(@video_info)
+      expect(@video_class_dbl).to receive(:new).with(info: @video_info)
       @video_factory.build(@entry)
     end
   end
@@ -140,13 +140,15 @@ describe Video do
     @id = "testid"
     @time = "2000-01-01"
     @channel_name = "test channel name"
-    @video = Video.new(
+    info = {
       id:           @id,
       channel_name: @channel_name,
       title:        "a test video",
+      published:    @time}
+    @video = Video.new(
       cache:        @cache_dbl,
       downloader:   @downloader_dbl,
-      published:    @time)
+      info: info)
   end
 
   describe "#new?" do
