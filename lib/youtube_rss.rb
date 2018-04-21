@@ -17,9 +17,10 @@ class Main
   attr_reader :channel_list
 end
 
+# A list of the channels, as defined by the user's channel list file
 class ChannelList
   def initialize(channel_list: File.readlines(File.expand_path(
-                   "~/.config/youtube-rss/channel_list.txt")),
+                 "~/.config/youtube-rss/channel_list.txt")),
                  channel_factory: ChannelFactory.new)
 
     @channel_factory = channel_factory
@@ -39,6 +40,7 @@ class ChannelList
   end
 end
 
+# Builds a channel object
 class ChannelFactory
   def initialize(entry_parser: EntryParser.new,
                  channel_class: Channel,
@@ -71,6 +73,8 @@ class ChannelFactory
   end
 end
 
+# An object which represents the youtube channels.
+# Contains a list of its videos, and can sync new videos if they are new
 class Channel
   def initialize(name:, video_list:)
     @name       = name
@@ -128,6 +132,7 @@ class PageDownloader
   end
 end
 
+# Takes a youtube channel xml feed and parses it into useful data
 class EntryParser
   def initialize(page_downloader: FeedFinder.new)
     @tag_regex       = /<(?<tag>.*)>(?<value>.*)<.*>/
@@ -154,7 +159,7 @@ class EntryParser
     output = {}
     entry.lines.map do |line|
       tag_regex.match(line) do |match|
-        tag = match[:tag].gsub(":", "_").to_sym
+        tag = match[:tag].tr(":", "_").to_sym
         output[tag] = match[:value]
       end
     end
@@ -162,6 +167,7 @@ class EntryParser
   end
 end
 
+# Builds video objects
 class VideoFactory
   def initialize(video_class: Video)
     @video_class = video_class
@@ -180,6 +186,7 @@ class VideoFactory
   attr_reader :video_class
 end
 
+# An object which contains info about a youtube video
 class Video
   def initialize(id:, title:, published:, channel_name:,
                  downloader: VideoDownloader.new, cache: Cache)
@@ -223,7 +230,7 @@ class Cache
   def self.update(time:, channel_name:)
     cache = read
     cache[channel_name] = time
-    self.write(cache)
+    write(cache)
   end
 
   def self.sync_time(channel_name:)
@@ -239,15 +246,16 @@ class Cache
   def self.read
     JSON.parse(File.read(CACHE_FILENAME))
   end
-
 end
 
+# Sends a message to System caller to run youtube-dl
 class VideoDownloader
   def run(id)
     SystemCaller.run("youtube-dl \"https://youtu.be/#{id}\"")
   end
 end
 
+# Ensures commands are run in the proper directory
 class SystemCaller
   def self.run(command)
     dl_path = ARGV[0] || "."
@@ -255,6 +263,7 @@ class SystemCaller
   end
 end
 
+# Manages the cache of feeds, downloads new ones, and serves them up as needed
 class FeedFinder
   def initialize(page_downloader: PageDownloader.new,
                  path: "~/.config/youtube-rss/feeds/%s",
@@ -267,7 +276,7 @@ class FeedFinder
 
   def run(info)
     id = uncomment(info).split("/")[1]
-    if not file.file?(file.expand_path(path % id))
+    if !file.file?(file.expand_path(path % id))
       download(info)
     elsif file_is_old?(info)
       download(info)

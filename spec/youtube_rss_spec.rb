@@ -55,6 +55,7 @@ describe Channel do
     end
     it "downloads all the new videos" do
       expect(@video_dbl).to receive(:new?).exactly(2).times
+      expect(@channel).to receive(:puts).with("test channel")
       @channel.sync
     end
   end
