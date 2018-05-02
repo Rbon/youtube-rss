@@ -6,7 +6,7 @@ describe Main do
       # feed = File.read("spec/fixtures/files/videos.xml")
       channel_list_dbl = double("Channel List")
       expect(channel_list_dbl).to receive(:sync)
-      Main.new(channel_list: channel_list_dbl).run
+      described_class.new(channel_list: channel_list_dbl).run
     end
   end
 end
