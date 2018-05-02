@@ -111,29 +111,33 @@ describe URLMaker do
 end
 
 describe VideoFactory do
-  describe "#build" do
-    before do
-      @video_class_dbl = double("Video Class")
-      @video_factory = VideoFactory.new(video_class: @video_class_dbl)
-      @entry = {
-        id:                "yt:video:Ah6xjqA0Cj0",
-        media_description: "Not the best day but maybe tomorrow will be better",
-        media_title:       "Day 4",
-        name:              "jackisanerd",
-        published:         "2018-03-03T05:59:29+00:00",
-        title:             "Day 4",
-        updated:           "2018-03-03T19:57:10+00:00",
-        yt_channelId:      "UCTjqo_3046IXFFGZ_M5jedA",
-        yt_videoId:        "Ah6xjqA0Cj0",
-        uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
-      @video_info = {
-        id: "Ah6xjqA0Cj0", title: "Day 4",
-        published: "2018-03-03T05:59:29+00:00", channel_name: "jackisanerd"}
-    end
+  let(:video_class_dbl) { double("Video Class") }
+  let(:video_factory)   { described_class.new(video_class: video_class_dbl) }
 
+  let(:entry) do
+    {id:                "yt:video:Ah6xjqA0Cj0",
+     media_description: "Not the best day but maybe tomorrow will be better",
+     media_title:       "Day 4",
+     name:              "jackisanerd",
+     published:         "2018-03-03T05:59:29+00:00",
+     title:             "Day 4",
+     updated:           "2018-03-03T19:57:10+00:00",
+     yt_channelId:      "UCTjqo_3046IXFFGZ_M5jedA",
+     yt_videoId:        "Ah6xjqA0Cj0",
+     uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
+  end
+
+  let(:video_info) do
+    {id:           "Ah6xjqA0Cj0",
+     title:        "Day 4",
+     published:    "2018-03-03T05:59:29+00:00",
+     channel_name: "jackisanerd"}
+  end
+
+  describe "#build" do
     it "builds a youtube object" do
-      expect(@video_class_dbl).to receive(:new).with(info: @video_info)
-      @video_factory.build(@entry)
+      expect(video_class_dbl).to receive(:new).with(info: video_info)
+      video_factory.build(entry)
     end
   end
 end
