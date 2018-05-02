@@ -68,21 +68,22 @@ describe Channel do
 end
 
 describe ChannelList do
-  describe "#sync" do
-    before do
-      @channel_dbl = double("Channel")
-      @channel_factory_dbl = double("Channel Factory")
-      @channel_list = ChannelList.new(
-        channel_factory: @channel_factory_dbl,
-        channel_list: ["user/testuser1", "user/testuser2"])
-    end
+  let(:channel_dbl)         { double("Channel") }
+  let(:channel_factory_dbl) { double("Channel Factory") }
 
+  let(:channel_list) do
+    described_class.new(
+      channel_factory: channel_factory_dbl,
+      channel_list:    ["user/testuser1", "user/testuser2"])
+  end
+
+  describe "#sync" do
     it "tells each channel to sync" do
-      expect(@channel_factory_dbl).to receive(:build).
+      expect(channel_factory_dbl).to receive(:build).
         exactly(2).times.
-        and_return(@channel_dbl)
-      expect(@channel_dbl).to receive(:sync).exactly(2).times
-      @channel_list.sync
+        and_return(channel_dbl)
+      expect(channel_dbl).to receive(:sync).exactly(2).times
+      channel_list.sync
     end
   end
 end
