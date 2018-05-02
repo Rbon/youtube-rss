@@ -268,46 +268,32 @@ class SystemCaller
   end
 end
 
-# Manages the cache of feeds, downloads new ones, and serves them up as needed
-class FeedFinder
-  def initialize(page_downloader: PageDownloader.new,
-                 path: "~/.config/youtube-rss/feeds/%s",
-                 file: File)
-
-    @page_downloader = page_downloader
-    @path            = path
-    @file            = file
+class FeedCache
+  def initialize(
+    reader:    FeedReader.new,
+    updater:   FeedCacheUpdater.new,
+    dir:       "~/.config/youtube-rss/feed-cache")
+    @updater = updater
+    @reader  = reader
+    @dir     = File.expand_path(dir)
   end
 
-  def run(info)
-    id = uncomment(info).split("/")[1]
-    if !file.file?(file.expand_path(path % id))
-      download(info)
-    elsif file_is_old?(info)
-      download(info)
-    elsif file.zero?(file.expand_path(path % id))
-      download(info)
+  def run(id)
+    if !in_cache?(id)
+      updater.run(id)
     end
-    file.read(file.expand_path(path % id))
+    feed(id)
   end
 
   private
 
-  attr_reader :page_downloader, :path, :file
+  attr_reader :updater, :reader, :dir
 
-  def uncomment(info)
-    info.split("#")[0].strip
+  def in_cache?(id)
+    File.file?("#{dir}/#{id}")
   end
 
-  def file_is_old?(info)
-    id = uncomment(info).split("/")[1]
-    (Time.now - file.mtime(file.expand_path(path % id))) / 3600 > 12
-  end
-
-  def download(info)
-    id = uncomment(info).split("/")[1]
-    file.open(file.expand_path(path % id), "w") do |f|
-      f.write(page_downloader.run(info))
-    end
+  def feed(id)
+    reader.run(id)
   end
 end
