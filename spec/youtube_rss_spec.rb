@@ -221,9 +221,7 @@ describe Cache do
 end
 
 describe VideoDownloader do
-  before do
-    @downloader = VideoDownloader.new
-  end
+  let(:downloader) { described_class.new }
 
   describe "#run" do
     context "given a valid youtube id" do
@@ -231,7 +229,7 @@ describe VideoDownloader do
         id = "testid"
         expect(SystemCaller).to receive(:run).
           with("youtube-dl \"https://youtu.be/#{id}\"")
-        @downloader.run(id)
+        downloader.run(id)
       end
     end
   end
