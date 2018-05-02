@@ -143,47 +143,50 @@ describe VideoFactory do
 end
 
 describe Video do
-  before do
-    @cache_dbl      = double("Cache")
-    @downloader_dbl = double("Video Downloader")
-    @id = "testid"
-    @time = "2000-01-01"
-    @channel_name = "test channel name"
-    info = {
-      id:           @id,
-      channel_name: @channel_name,
-      title:        "a test video",
-      published:    @time}
-    @video = Video.new(
-      cache:        @cache_dbl,
-      downloader:   @downloader_dbl,
-      info: info)
+  let(:cache_dbl)      { double("Cache") }
+  let(:downloader_dbl) { double("Video Downloader") }
+  let(:id)             { "testid" }
+  let(:time)           { "2000-01-01" }
+  let(:channel_name)   { "test channel name" }
+
+  let(:info) do
+    {id:           id,
+     channel_name: channel_name,
+     title:        "a test video",
+     published:    time}
+  end
+
+  let(:video) do
+    described_class.new(
+      cache:      cache_dbl,
+      downloader: downloader_dbl,
+      info:       info)
   end
 
   describe "#new?" do
     context "when video is new" do
       it "returns true" do
-        expect(@cache_dbl).to receive(:sync_time).
+        expect(cache_dbl).to receive(:sync_time).
           and_return(Time.parse("1999-01-01"))
-        expect(@video.new?).to be true
+        expect(video.new?).to be true
       end
     end
 
     context "when video is old" do
       it "returns false" do
-        expect(@cache_dbl).to receive(:sync_time).
+        expect(cache_dbl).to receive(:sync_time).
           and_return(Time.parse("2008-01-01"))
-        expect(@video.new?).to be false
+        expect(video.new?).to be false
       end
     end
   end
 
   describe "#download" do
     it "downloads a video" do
-      expect(@downloader_dbl).to receive(:run).with(@id)
-      expect(@cache_dbl).to receive(:update).
-        with(time: Time.parse(@time), channel_name: @channel_name)
-      @video.download
+      expect(downloader_dbl).to receive(:run).with(id)
+      expect(cache_dbl).to receive(:update).
+        with(time: Time.parse(time), channel_name: channel_name)
+      video.download
     end
   end
 end
