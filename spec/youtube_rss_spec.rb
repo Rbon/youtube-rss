@@ -240,9 +240,9 @@ describe SystemCaller do
     it "downloads the video" do
       ARGV[0] = nil # this is a hack
       command = "this is a command"
-      expect(SystemCaller).to receive(:system).
+      expect(described_class).to receive(:system).
         with(command)
-      SystemCaller.run(command)
+      described_class.run(command)
     end
   end
 end
