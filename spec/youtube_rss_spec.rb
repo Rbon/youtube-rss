@@ -248,36 +248,38 @@ describe SystemCaller do
 end
 
 describe EntryParser do
-  describe "#run" do
-    before do
-      @page = File.read("spec/fixtures/files/videos.xml")
-      @channel_entry = {
-        id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
-        name:         "jackisanerd",
-        published:    "2011-04-20T07:27:32+00:00",
-        title:        "jackisanerd",
-        yt_channelId: "UCTjqo_3046IXFFGZ_M5jedA",
-        uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
-      @video_entry = {
-        id:                "yt:video:Ah6xjqA0Cj0",
-        media_description: "Not the best day but maybe tomorrow will be better",
-        media_title:       "Day 4",
-        name:              "jackisanerd",
-        published:         "2018-03-03T05:59:29+00:00",
-        title:             "Day 4",
-        updated:           "2018-03-03T19:57:10+00:00",
-        yt_channelId:      "UCTjqo_3046IXFFGZ_M5jedA",
-        yt_videoId:        "Ah6xjqA0Cj0",
-        uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
-      @page_drl_dbl = double("Page Downloader")
-      @entry_parser = EntryParser.new(page_downloader: @page_drl_dbl)
-    end
+  let(:page)         { File.read("spec/fixtures/files/videos.xml") }
+  let(:page_drl_dbl) { double("Page Downloader") }
+  let(:entry_parser) { described_class.new(page_downloader: page_drl_dbl) }
 
+  let(:channel_entry) do
+    {id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
+     name:         "jackisanerd",
+     published:    "2011-04-20T07:27:32+00:00",
+     title:        "jackisanerd",
+     yt_channelId: "UCTjqo_3046IXFFGZ_M5jedA",
+     uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
+  end
+
+  let(:video_entry) do
+    {id:                "yt:video:Ah6xjqA0Cj0",
+     media_description: "Not the best day but maybe tomorrow will be better",
+     media_title:       "Day 4",
+     name:              "jackisanerd",
+     published:         "2018-03-03T05:59:29+00:00",
+     title:             "Day 4",
+     updated:           "2018-03-03T19:57:10+00:00",
+     yt_channelId:      "UCTjqo_3046IXFFGZ_M5jedA",
+     yt_videoId:        "Ah6xjqA0Cj0",
+     uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"}
+  end
+
+  describe "#run" do
     it "returns an array of parsed entries" do
-      expect(@page_drl_dbl).to receive(:run).and_return(@page)
-      entries = @entry_parser.run(:test)
-      expect(entries[0]).to eql(@channel_entry)
-      expect(entries[1]).to eql(@video_entry)
+      expect(page_drl_dbl).to receive(:run).and_return(page)
+      entries = entry_parser.run(:test)
+      expect(entries[0]).to eql(channel_entry)
+      expect(entries[1]).to eql(video_entry)
     end
   end
 end
