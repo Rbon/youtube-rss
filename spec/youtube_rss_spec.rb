@@ -12,35 +12,39 @@ describe Main do
 end
 
 describe ChannelFactory do
+  let(:entry_parser_dbl)  { double("Entry Parser") }
+  let(:video_factory_dbl) { double("Video Factory") }
+  let(:channel_class_dbl) { double("Channel Class") }
+  let(:name)              { "jackisanerd" }
+
+  let(:entries) do
+    [{
+       id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
+       name:         name,
+       published:    "2011-04-20T07:27:32+00:00",
+       title:        "jackisanerd",
+       yt_channelId: "UCTjqo_3046IXFFGZ_M5jedA",
+       uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"},
+    :video_entry1,
+    :video_entry2]
+  end
+
+  let(:channel_factory) do
+    described_class.new(
+      entry_parser:  entry_parser_dbl,
+      video_factory: video_factory_dbl,
+      channel_class: channel_class_dbl)
+  end
+
   describe "#build" do
-    before do
-      @entry_parser_dbl  = double("Entry Parser")
-      @video_factory_dbl = double("Video Factory")
-      @channel_class_dbl = double("Channel Class")
-      @name = "jackisanerd"
-      @entries = [
-        {
-           id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
-           name:         @name,
-           published:    "2011-04-20T07:27:32+00:00",
-           title:        "jackisanerd",
-           yt_channelId: "UCTjqo_3046IXFFGZ_M5jedA",
-           uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"},
-        :video_entry1,
-        :video_entry2]
-      @channel_factory   = ChannelFactory.new(
-        entry_parser: @entry_parser_dbl,
-        video_factory: @video_factory_dbl,
-        channel_class: @channel_class_dbl)
-    end
     it "builds a channel object" do
-      expect(@entry_parser_dbl).to receive(:run).and_return(@entries)
-      expect(@video_factory_dbl).to receive(:build).
+      expect(entry_parser_dbl).to receive(:run).and_return(entries)
+      expect(video_factory_dbl).to receive(:build).
         and_return(:test_video).
         exactly(2).times
-      expect(@channel_class_dbl).to receive(:new).
-        with({name: @name, video_list: [:test_video, :test_video]})
-      @channel_factory.build(:test)
+      expect(channel_class_dbl).to receive(:new).
+        with({name: name, video_list: [:test_video, :test_video]})
+      channel_factory.build(:test)
     end
   end
 end
