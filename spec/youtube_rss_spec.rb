@@ -305,12 +305,14 @@ describe PageDownloader do
 end
 
 describe FeedCache do
-  let(:updater_double)    { double("a feed cache updater") }
-  let(:reader_double)     { double("a feed cache reader") }
-  let(:dir)               { "spec/fixtures/files/" }
-  let(:existing_id)       { "videos.xml" }
-  let(:old_time)          { Time.now - (13 * 3600) }
-  let(:new_id)            { "some id" }
+  FakeFile = Struct.new("FakeFile", :zero?, :mtime)
+
+  let(:updater_double)  { double("a feed cache updater") }
+  let(:reader_double)   { double("a feed cache reader") }
+  let(:dir)             { "spec/fixtures/files/" }
+  let(:existing_id)     { "videos.xml" }
+  let(:old_time)        { Time.now - (13 * 3600) }
+  let(:new_id)          { "some id" }
 
   let(:feed_cache) do
     described_class.new(
@@ -328,53 +330,30 @@ describe FeedCache do
       end
     end
 
-    context "when there is an up to date cached feed" do
+    context "when the file is not old or empty" do
       it "returns that feed" do
+        expect(File).to receive(:mtime).and_return(Time.now)
         expect(reader_double).to receive(:run).and_return(:the_feed)
         expect(feed_cache.run(existing_id)).to eql(:the_feed)
       end
     end
 
-    context "when the file in cache is old" do
-      xit "overwrites that file with a new download, and returns its content" do
-        allow(file_dbl).to receive(:expand_path).
-          and_return(:path_of_file)
-        expect(file_dbl).to receive(:file?).and_return(true)
-        expect(file_dbl).to receive(:mtime).and_return(old_time)
-        expect(file_dbl).to receive(:open).
-          with(:path_of_file, "w").
-          and_yield(file_obj_dbl)
-        expect(page_dlr_dbl).to receive(:run).with("user/videos.xml").
-          and_return(:result)
-        expect(file_obj_dbl).to receive(:write).with(:result)
-        expect(file_dbl).to receive(:read).
-          with(:path_of_file).
-          and_return(:the_file)
-        feed = feed_getter.run("user/videos.xml")
-        expect(feed).to eql(:the_file)
+    context "when the file is old" do
+      it "overwrites that file with a new download, and returns its content" do
+        expect(File).to receive(:mtime).and_return(old_time)
+        expect(updater_double).to receive(:run)
+        expect(reader_double).to receive(:run).and_return(:the_feed)
+        expect(feed_cache.run(existing_id)).to eql(:the_feed)
       end
     end
 
-    context "when the file exists and is new, but is empty" do
-      xit "overwrites that file with a new download, and returns its content" do
-        allow(file_dbl).to receive(:expand_path).
-          and_return(:path_of_file)
-        expect(file_dbl).to receive(:file?).and_return(true)
-        expect(file_dbl).to receive(:mtime).and_return(Time.now)
-        expect(file_dbl).to receive(:zero?).
-          with(:path_of_file).
-          and_return(true)
-        expect(file_dbl).to receive(:open).
-          with(:path_of_file, "w").
-          and_yield(file_obj_dbl)
-        expect(page_dlr_dbl).to receive(:run).with("user/videos.xml").
-          and_return(:result)
-        expect(file_obj_dbl).to receive(:write).with(:result)
-        expect(file_dbl).to receive(:read).
-          with(:path_of_file).
-          and_return(:the_file)
-        feed = feed_getter.run("user/videos.xml")
-        expect(feed).to eql(:the_file)
+    context "when the file is empty" do
+      it "overwrites that file with a new download, and returns its content" do
+        expect(File).to receive(:mtime).and_return(Time.now)
+        expect(File).to receive(:zero?).and_return(true)
+        expect(updater_double).to receive(:run)
+        expect(reader_double).to receive(:run).and_return(:the_feed)
+        expect(feed_cache.run(existing_id)).to eql(:the_feed)
       end
     end
   end

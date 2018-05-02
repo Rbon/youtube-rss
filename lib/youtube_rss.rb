@@ -281,6 +281,10 @@ class FeedCache
   def run(id)
     if !in_cache?(id)
       updater.run(id)
+    elsif old?(id)
+      updater.run(id)
+    elsif empty?(id)
+      updater.run(id)
     end
     feed(id)
   end
@@ -289,11 +293,27 @@ class FeedCache
 
   attr_reader :updater, :reader, :dir
 
-  def in_cache?(id)
-    File.file?("#{dir}/#{id}")
-  end
-
   def feed(id)
     reader.run(id)
+  end
+
+  def in_cache?(id)
+    File.file?(path(id))
+  end
+
+  def old?(id)
+    File.mtime(path(id)) < age_cutoff
+  end
+
+  def empty?(id)
+    File.zero?(path(id))
+  end
+
+  def age_cutoff
+    Time.now - 43200
+  end
+
+  def path(id)
+    "%s/%s" % [dir, id]
   end
 end
