@@ -317,3 +317,38 @@ class FeedCache
     "%s/%s" % [dir, id]
   end
 end
+
+class FeedCacheReader
+  def initialize(dir: "~/.config/youtube-rss/feed-cache")
+    @dir = File.expand_path(dir)
+  end
+
+  def run(id)
+    File.readlines("#{dir}/#{id}")
+  end
+
+  private
+
+  attr_reader :dir
+end
+
+class FeedCacheUpdater
+  def initialize(
+    dir:          "~/.config/youtube-rss/feed-cache",
+    downloader:   FeedDownloader.new)
+    @dir        = File.expand_path(dir)
+    @downloader = downloader
+  end
+
+  def run(id)
+    File.open("w", "#{dir}/#{id}") { |file| file.write(new_feed(id)) }
+  end
+
+  private
+
+  def new_feed(id)
+    downloader.run(id)
+  end
+
+  attr_reader :dir, :downloader
+end

@@ -356,3 +356,43 @@ describe FeedCache do
     end
   end
 end
+
+describe FeedCacheReader do
+  let(:id)                { :some_id }
+  let(:feed)              { :the_feed }
+  let(:dir)               { "testdir/testsubdir" }
+  let(:expected_path)     { File.expand_path("#{dir}/#{id}") }
+  let(:feed_cache_reader) { described_class.new(dir: dir) }
+
+  describe "#run" do
+    it "returns the contents of the cached feed" do
+      expect(File).to receive(:readlines).with(expected_path).and_return(feed)
+      expect(feed_cache_reader.run(id)).to eql(feed)
+    end
+  end
+end
+
+describe FeedCacheUpdater do
+  let(:downloader_double) { double("Feed Downloader") }
+  let(:file_double)       { double("a file object") }
+  let(:id)                { :some_id }
+  let(:dir)               { "testdir/testsubdir" }
+  let(:expected_path)     { File.expand_path("#{dir}/#{id}") }
+  let(:new_feed)          { :new_feed }
+
+  let(:feed_cache_updater) do
+    described_class.new(
+      dir:        dir,
+      downloader: downloader_double)
+  end
+
+  describe "#run" do
+    it "downloads a new feed and writes it to the cache" do
+      expect(downloader_double).to receive(:run).with(id).and_return(new_feed)
+      expect(File).to receive(:open).with("w", expected_path).
+        and_yield(file_double)
+      expect(file_double).to receive(:write).with(new_feed)
+      feed_cache_updater.run(id)
+    end
+  end
+end
