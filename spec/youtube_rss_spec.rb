@@ -89,24 +89,22 @@ describe ChannelList do
 end
 
 describe URLMaker do
-  describe "#run" do
-    before do
-      @url_start = "https://www.youtube.com/feeds/videos.xml?"
-      @new_id_format     = "channel_id=test_id"
-      @old_name_format   = "user=test_user"
-    end
+  let(:url_start)       { "https://www.youtube.com/feeds/videos.xml?" }
+  let(:new_id_format)   { "channel_id=test_id" }
+  let(:old_name_format) { "user=test_user" }
 
+  describe "#run" do
     context "with the old username type" do
       it "returns a proper user feed url" do
-        url = URI(@url_start + @old_name_format).to_s
-        expect(URLMaker.new.run("user/test_user").to_s).to eql(url)
+        url = URI(url_start + old_name_format).to_s
+        expect(described_class.new.run("user/test_user").to_s).to eql(url)
       end
     end
 
     context "with the new channel id type" do
       it "returns a proper id feed url" do
-        url = URI(@url_start + @new_id_format).to_s
-        expect(URLMaker.new.run("channel/test_id").to_s).to eql(url)
+        url = URI(url_start + new_id_format).to_s
+        expect(described_class.new.run("channel/test_id").to_s).to eql(url)
       end
     end
   end
