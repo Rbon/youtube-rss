@@ -285,21 +285,22 @@ describe EntryParser do
 end
 
 describe PageDownloader do
-  describe "#run" do
-    before do
-      @url_maker_dbl = double("URL Maker")
-      @http_dbl = double("HTTP")
-      @page_downloader = PageDownloader.new(
-        url_maker: @url_maker_dbl,
-        http: @http_dbl)
-    end
+  let(:url_maker_dbl) { double("URL Maker") }
+  let(:http_dbl)      { double("HTTP") }
 
+  let(:page_downloader) do
+    described_class.new(
+      url_maker: url_maker_dbl,
+      http:      http_dbl)
+  end
+
+  describe "#run" do
     it "downloads the page" do
-      expect(@page_downloader).to receive(:puts).
+      expect(page_downloader).to receive(:puts).
        with("DOWNLOADING FEED #{:test}")
-      expect(@url_maker_dbl).to receive(:run).and_return(:page)
-      expect(@http_dbl).to receive(:get).with(:page)
-      page = @page_downloader.run(:test)
+      expect(url_maker_dbl).to receive(:run).and_return(:page)
+      expect(http_dbl).to receive(:get).with(:page)
+      page_downloader.run(:test)
     end
   end
 end
