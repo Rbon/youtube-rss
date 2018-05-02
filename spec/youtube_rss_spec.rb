@@ -305,8 +305,6 @@ describe PageDownloader do
 end
 
 describe FeedCache do
-  FakeFile = Struct.new("FakeFile", :zero?, :mtime)
-
   let(:updater_double)  { double("a feed cache updater") }
   let(:reader_double)   { double("a feed cache reader") }
   let(:dir)             { "spec/fixtures/files/" }
