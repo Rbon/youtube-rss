@@ -124,17 +124,14 @@ class PageDownloader
     @http      = http
   end
 
-  def run(info)
-    http.get(url(info))
+  def run(url)
+    http.get(url)
   end
 
   private
 
   attr_reader :url_maker, :http
 
-  def url(info)
-    url_maker.run(info)
-  end
 end
 
 # Takes a youtube channel xml feed and parses it into useful data

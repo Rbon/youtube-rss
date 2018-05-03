@@ -284,20 +284,14 @@ describe EntryParser do
 end
 
 describe PageDownloader do
-  let(:url_maker_dbl) { double("URL Maker") }
-  let(:http_dbl)      { double("HTTP") }
-
-  let(:page_downloader) do
-    described_class.new(
-      url_maker: url_maker_dbl,
-      http:      http_dbl)
-  end
+  let(:http_dbl)        { double("HTTP") }
+  let(:page_downloader) { described_class.new(http: http_dbl) }
+  let(:url)           { "some url" }
 
   describe "#run" do
     it "downloads the page" do
-      expect(url_maker_dbl).to receive(:run).and_return(:page)
-      expect(http_dbl).to receive(:get).with(:page)
-      page_downloader.run(:test)
+      expect(http_dbl).to receive(:get).with(url)
+      page_downloader.run(url)
     end
   end
 end
