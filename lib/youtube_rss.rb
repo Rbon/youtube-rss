@@ -275,17 +275,14 @@ class FeedCache
   end
 
   def run(id)
-    if in_cache?(id)
-      if old?(id)
-        updater.run(id)
-      elsif empty?(id)
-        updater.run(id)
-      end
-      feed(id)
-    else
+    if !in_cache?(id)
+      updater.run
+    elsif old?(id)
       updater.run(id)
-      feed(id)
+    elsif empty?(id)
+      updater.run(id)
     end
+    feed(id)
   end
 
   private
