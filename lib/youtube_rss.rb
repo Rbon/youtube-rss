@@ -320,7 +320,7 @@ class FeedCacheReader
   end
 
   def run(id)
-    File.readlines("#{dir}/#{strip(id)}")
+    File.read("#{dir}/#{strip(id)}")
   end
 
   private

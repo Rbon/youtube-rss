@@ -359,7 +359,7 @@ describe FeedCacheReader do
 
   describe "#run" do
     it "returns the contents of the cached feed" do
-      expect(File).to receive(:readlines).with(expected_path).and_return(feed)
+      expect(File).to receive(:read).with(expected_path).and_return(feed)
       expect(feed_cache_reader.run(id)).to eql(feed)
     end
   end
