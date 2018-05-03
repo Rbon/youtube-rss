@@ -358,10 +358,11 @@ describe FeedCache do
 end
 
 describe FeedCacheReader do
-  let(:id)                { :some_id }
+  let(:id)                { "type/an_id # some comment" }
+  let(:expected_id)       { "an_id" }
   let(:feed)              { :the_feed }
   let(:dir)               { "testdir/testsubdir" }
-  let(:expected_path)     { File.expand_path("#{dir}/#{id}") }
+  let(:expected_path)     { File.expand_path("#{dir}/#{expected_id}") }
   let(:feed_cache_reader) { described_class.new(dir: dir) }
 
   describe "#run" do
@@ -375,9 +376,10 @@ end
 describe FeedCacheUpdater do
   let(:downloader_double) { double("Feed Downloader") }
   let(:file_double)       { double("a file object") }
-  let(:id)                { :some_id }
+  let(:id)                { "type/an_id # some comment" }
+  let(:expected_id)       { "an_id" }
   let(:dir)               { "testdir/testsubdir" }
-  let(:expected_path)     { File.expand_path("#{dir}/#{id}") }
+  let(:expected_path)     { File.expand_path("#{dir}/#{expected_id}") }
   let(:new_feed)          { :new_feed }
 
   let(:feed_cache_updater) do

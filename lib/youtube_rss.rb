@@ -324,12 +324,16 @@ class FeedCacheReader
   end
 
   def run(id)
-    File.readlines("#{dir}/#{id}")
+    File.readlines("#{dir}/#{strip(id)}")
   end
 
   private
 
   attr_reader :dir
+
+  def strip(id)
+    id.split("#")[0].split("/")[1].strip
+  end
 end
 
 class FeedCacheUpdater
@@ -341,16 +345,20 @@ class FeedCacheUpdater
   end
 
   def run(id)
-    File.open("#{dir}/#{id}", "w") { |file| file.write(new_feed(id)) }
+    File.open("#{dir}/#{strip(id)}", "w") { |file| file.write(new_feed(id)) }
   end
 
   private
+
+  attr_reader :dir, :downloader
 
   def new_feed(id)
     downloader.run(id)
   end
 
-  attr_reader :dir, :downloader
+  def strip(id)
+    id.split("#")[0].split("/")[1].strip
+  end
 end
 
 class FeedDownloader
