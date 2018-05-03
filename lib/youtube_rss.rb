@@ -140,7 +140,7 @@ end
 
 # Takes a youtube channel xml feed and parses it into useful data
 class EntryParser
-  def initialize(page_downloader: FeedFinder.new)
+  def initialize(page_downloader: FeedCache.new)
     @tag_regex       = /<(?<tag>.*)>(?<value>.*)<.*>/
     @page_downloader = page_downloader
   end
@@ -270,7 +270,7 @@ end
 
 class FeedCache
   def initialize(
-    reader:    FeedReader.new,
+    reader:    FeedCacheReader.new,
     updater:   FeedCacheUpdater.new,
     dir:       "~/.config/youtube-rss/feed-cache")
     @updater = updater
@@ -351,4 +351,30 @@ class FeedCacheUpdater
   end
 
   attr_reader :dir, :downloader
+end
+
+class FeedDownloader
+  def initialize(
+    page_downloader:   PageDownloader.new,
+    url_maker:         URLMaker.new)
+    @page_downloader = page_downloader
+    @url_maker       = url_maker
+  end
+
+  def run(id)
+    page(url(id))
+  end
+
+  private
+
+  attr_reader :url_maker, :page_downloader
+
+  def page(url)
+    page_downloader.run(url)
+  end
+
+  def url(id)
+    url_maker.run(id)
+  end
+
 end

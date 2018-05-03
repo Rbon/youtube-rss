@@ -396,3 +396,25 @@ describe FeedCacheUpdater do
     end
   end
 end
+
+describe FeedDownloader do
+  let(:id)                     { :the_id }
+  let(:url)                    { :some_url }
+  let(:feed)                   { :the_feed }
+  let(:url_maker_double)       { double("URLMaker") }
+  let(:page_downloader_double) { double("PageDownloader") }
+
+  let(:feed_downloader) do
+    described_class.new(
+      page_downloader: page_downloader_double,
+      url_maker:       url_maker_double)
+  end
+
+  describe "#run" do
+    it "tells the page downloader to download the feed" do
+      expect(url_maker_double).to receive(:run).with(id).and_return(url)
+      expect(page_downloader_double).to receive(:run).with(url).and_return(feed)
+      expect(feed_downloader.run(id)).to eql(feed)
+    end
+  end
+end
