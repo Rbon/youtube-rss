@@ -276,7 +276,7 @@ class FeedCache
 
   def run(id)
     if !in_cache?(id)
-      updater.run
+      updater.run(id)
     elsif old?(id)
       updater.run(id)
     elsif empty?(id)

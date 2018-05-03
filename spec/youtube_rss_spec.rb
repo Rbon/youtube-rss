@@ -314,7 +314,7 @@ describe FeedCache do
   describe "#run" do
     context "when there is no cached feed" do
       it "updates the cache, returns the new feed" do
-        expect(updater_double).to receive(:run)
+        expect(updater_double).to receive(:run).with(new_id)
         expect(reader_double).to receive(:run).and_return(:the_feed)
         expect(feed_cache.run(new_id)).to eql(:the_feed)
       end
@@ -331,7 +331,7 @@ describe FeedCache do
     context "when the file is old" do
       it "overwrites that file with a new download, and returns its content" do
         expect(File).to receive(:mtime).and_return(old_time)
-        expect(updater_double).to receive(:run)
+        expect(updater_double).to receive(:run).with(existing_id)
         expect(reader_double).to receive(:run).and_return(:the_feed)
         expect(feed_cache.run(existing_id)).to eql(:the_feed)
       end
@@ -341,7 +341,7 @@ describe FeedCache do
       it "overwrites that file with a new download, and returns its content" do
         expect(File).to receive(:mtime).and_return(Time.now)
         expect(File).to receive(:zero?).and_return(true)
-        expect(updater_double).to receive(:run)
+        expect(updater_double).to receive(:run).with(existing_id)
         expect(reader_double).to receive(:run).and_return(:the_feed)
         expect(feed_cache.run(existing_id)).to eql(:the_feed)
       end
