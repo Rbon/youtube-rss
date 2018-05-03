@@ -341,7 +341,7 @@ class FeedCacheUpdater
   end
 
   def run(id)
-    File.open("w", "#{dir}/#{id}") { |file| file.write(new_feed(id)) }
+    File.open("#{dir}/#{id}", "w") { |file| file.write(new_feed(id)) }
   end
 
   private

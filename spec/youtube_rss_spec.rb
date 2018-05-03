@@ -389,7 +389,7 @@ describe FeedCacheUpdater do
   describe "#run" do
     it "downloads a new feed and writes it to the cache" do
       expect(downloader_double).to receive(:run).with(id).and_return(new_feed)
-      expect(File).to receive(:open).with("w", expected_path).
+      expect(File).to receive(:open).with(expected_path, "w").
         and_yield(file_double)
       expect(file_double).to receive(:write).with(new_feed)
       feed_cache_updater.run(id)
