@@ -300,9 +300,9 @@ describe FeedCache do
   let(:updater_double)  { double("a feed cache updater") }
   let(:reader_double)   { double("a feed cache reader") }
   let(:dir)             { "spec/fixtures/files/" }
-  let(:existing_id)     { "videos.xml" }
+  let(:existing_id)     { "user/videos.xml" }
   let(:old_time)        { Time.now - (13 * 3600) }
-  let(:new_id)          { "some id" }
+  let(:new_id)          { "type/an_id # some comment" }
 
   let(:feed_cache) do
     described_class.new(

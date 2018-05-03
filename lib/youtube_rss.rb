@@ -275,14 +275,17 @@ class FeedCache
   end
 
   def run(id)
-    if !in_cache?(id)
+    if in_cache?(id)
+      if old?(id)
+        updater.run(id)
+      elsif empty?(id)
+        updater.run(id)
+      end
+      feed(id)
+    else
       updater.run(id)
-    elsif old?(id)
-      updater.run(id)
-    elsif empty?(id)
-      updater.run(id)
+      feed(id)
     end
-    feed(id)
   end
 
   private
@@ -310,7 +313,11 @@ class FeedCache
   end
 
   def path(id)
-    "%s/%s" % [dir, id]
+    "%s/%s" % [dir, strip(id)]
+  end
+
+  def strip(id)
+    id.split("#")[0].split("/")[1].strip
   end
 end
 
