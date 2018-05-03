@@ -295,8 +295,6 @@ describe PageDownloader do
 
   describe "#run" do
     it "downloads the page" do
-      expect(page_downloader).to receive(:puts).
-       with("DOWNLOADING FEED #{:test}")
       expect(url_maker_dbl).to receive(:run).and_return(:page)
       expect(http_dbl).to receive(:get).with(:page)
       page_downloader.run(:test)
@@ -416,6 +414,7 @@ describe FeedDownloader do
     it "tells the page downloader to download the feed" do
       expect(url_maker_double).to receive(:run).with(id).and_return(url)
       expect(page_downloader_double).to receive(:run).with(url).and_return(feed)
+      expect(feed_downloader).to receive(:puts).with("DOWNLOADING FEED #{id}")
       expect(feed_downloader.run(id)).to eql(feed)
     end
   end

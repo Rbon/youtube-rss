@@ -125,7 +125,6 @@ class PageDownloader
   end
 
   def run(info)
-    puts "DOWNLOADING FEED #{info}"
     http.get(url(info))
   end
 
@@ -370,6 +369,7 @@ class FeedDownloader
   end
 
   def run(id)
+    puts "DOWNLOADING FEED #{id}"
     page(url(id))
   end
 
