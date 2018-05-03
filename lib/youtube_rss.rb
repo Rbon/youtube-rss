@@ -26,9 +26,9 @@ end
 
 # A list of the channels, as defined by the user's channel list file
 class ChannelList
-  def initialize(channel_list: UserChannelList.path,
-                 channel_factory: ChannelFactory.new)
-
+  def initialize(
+    channel_list:      UserChannelList.path,
+    channel_factory:   ChannelFactory.new)
     @channel_factory = channel_factory
     @channel_list    = channel_list
   end
@@ -48,10 +48,10 @@ end
 
 # Builds a channel object
 class ChannelFactory
-  def initialize(entry_parser: EntryParser.new,
-                 channel_class: Channel,
-                 video_factory: VideoFactory.new)
-
+  def initialize(
+    entry_parser:    EntryParser.new,
+    channel_class:   Channel,
+    video_factory:   VideoFactory.new)
     @entry_parser  = entry_parser
     @channel_class = channel_class
     @video_factory = video_factory
@@ -388,5 +388,4 @@ class FeedDownloader
   def url(id)
     url_maker.run(id)
   end
-
 end
