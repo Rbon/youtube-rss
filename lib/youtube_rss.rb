@@ -398,9 +398,9 @@ class FeedDownloader
     @url_maker       = url_maker
   end
 
-  def run(id)
+  def run(id:, type:)
     puts "DOWNLOADING FEED #{id}"
-    page(url(id))
+    page(url(id: id, type: type))
   end
 
   private
@@ -411,7 +411,7 @@ class FeedDownloader
     page_downloader.run(url)
   end
 
-  def url(id)
-    url_maker.run(id)
+  def url(args)
+    url_maker.run(args)
   end
 end

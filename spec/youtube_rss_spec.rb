@@ -433,6 +433,7 @@ end
 
 describe FeedDownloader do
   let(:id)                     { :the_id }
+  let(:type)                   { :the_type }
   let(:url)                    { :some_url }
   let(:feed)                   { :the_feed }
   let(:url_maker_double)       { double("URLMaker") }
@@ -446,10 +447,12 @@ describe FeedDownloader do
 
   describe "#run" do
     it "tells the page downloader to download the feed" do
-      expect(url_maker_double).to receive(:run).with(id).and_return(url)
+      expect(url_maker_double).to receive(:run).
+        with(id: id, type: type).
+        and_return(url)
       expect(page_downloader_double).to receive(:run).with(url).and_return(feed)
       expect(feed_downloader).to receive(:puts).with("DOWNLOADING FEED #{id}")
-      expect(feed_downloader.run(id)).to eql(feed)
+      expect(feed_downloader.run(id: id, type: type)).to eql(feed)
     end
   end
 end
