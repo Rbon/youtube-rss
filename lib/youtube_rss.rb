@@ -20,14 +20,14 @@ end
 # Class to access the user channel list file
 class FeedList
   def initialize(
-    feed_class:,
+    feed_class:   Feed,
     list_file:    "~/.config/youtube-rss/channel_list.txt")
     @feed_class = feed_class
     @list_file  = list_file
   end
 
   def list
-    file_lines.map { |line| feed_class.new(line) }
+    file_lines.map { |line| feed_class.new(info: line) }
   end
 
   private
@@ -64,7 +64,7 @@ end
 # A list of the channels, as defined by the user's channel list file
 class ChannelList
   def initialize(
-    feed_list:         FeedList.list,
+    feed_list:         FeedList.new.list,
     channel_factory:   ChannelFactory.new)
     @channel_factory = channel_factory
     @feed_list       = feed_list
