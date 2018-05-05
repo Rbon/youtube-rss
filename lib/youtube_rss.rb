@@ -18,9 +18,24 @@ class Main
 end
 
 # Class to access the user channel list file
-class UserChannelList
-  def self.path
-    File.readlines(File.expand_path("~/.config/youtube-rss/channel_list.txt"))
+class FeedList
+  def initialize(
+    feed_class:,
+    list_file:    "~/.config/youtube-rss/channel_list.txt")
+    @feed_class = feed_class
+    @list_file  = list_file
+  end
+
+  def list
+    file_lines.map { |line| feed_class.new(line) }
+  end
+
+  private
+
+  attr_reader :list_file, :feed_class
+
+  def file_lines
+    File.readlines(File.expand_path(list_file))
   end
 end
 

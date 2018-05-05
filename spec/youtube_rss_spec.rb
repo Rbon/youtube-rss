@@ -23,6 +23,21 @@ describe Feed do
   specify { expect(feed.comment).to eql(comment) }
 end
 
+describe FeedList do
+  let(:feed_class_double) { double("Feed Class") }
+  let(:fake_list)         { Array.new(5, :some_feed) }
+
+  let(:feed_list) { described_class.new(feed_class: feed_class_double) }
+
+  describe "#list" do
+    it "is a list of feeds" do
+      expect(File).to receive(:readlines).and_return(fake_list)
+      expect(feed_class_double).to receive(:new).exactly(fake_list.length).times
+      feed_list.list
+    end
+  end
+end
+
 describe ChannelFactory do
   let(:entry_parser_dbl)  { double("Entry Parser") }
   let(:video_factory_dbl) { double("Video Factory") }
