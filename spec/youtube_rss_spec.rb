@@ -389,11 +389,10 @@ describe FeedCache do
 end
 
 describe FeedCacheReader do
-  let(:id)                { "type/an_id # some comment" }
-  let(:expected_id)       { "an_id" }
+  let(:id)                { "an_id" }
   let(:feed)              { :the_feed }
   let(:dir)               { "testdir/testsubdir" }
-  let(:expected_path)     { File.expand_path("#{dir}/#{expected_id}") }
+  let(:expected_path)     { File.expand_path("#{dir}/#{id}") }
   let(:feed_cache_reader) { described_class.new(dir: dir) }
 
   describe "#run" do

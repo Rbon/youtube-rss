@@ -357,16 +357,12 @@ class FeedCacheReader
   end
 
   def run(id)
-    File.read("#{dir}/#{strip(id)}")
+    File.read("#{dir}/#{id}")
   end
 
   private
 
   attr_reader :dir
-
-  def strip(id)
-    id.split("#")[0].split("/")[1].strip
-  end
 end
 
 class FeedCacheUpdater
