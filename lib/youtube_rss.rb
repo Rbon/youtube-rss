@@ -64,10 +64,10 @@ end
 # A list of the channels, as defined by the user's channel list file
 class ChannelList
   def initialize(
-    channel_list:      UserChannelList.path,
+    feed_list:         FeedList.list,
     channel_factory:   ChannelFactory.new)
     @channel_factory = channel_factory
-    @channel_list    = channel_list
+    @feed_list       = feed_list
   end
 
   def sync
@@ -76,10 +76,10 @@ class ChannelList
 
   private
 
-  attr_reader :channel_list, :channel_factory
+  attr_reader :feed_list, :channel_factory
 
   def list
-    channel_list.map { |info| channel_factory.build(info) }
+    feed_list.map { |feed| channel_factory.build(feed) }
   end
 end
 

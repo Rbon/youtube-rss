@@ -101,7 +101,7 @@ describe ChannelList do
   let(:channel_list) do
     described_class.new(
       channel_factory: channel_factory_dbl,
-      channel_list:    ["user/testuser1", "user/testuser2"])
+      feed_list:    ["user/testuser1", "user/testuser2"])
   end
 
   describe "#sync" do
