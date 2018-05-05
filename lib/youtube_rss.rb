@@ -94,8 +94,8 @@ class ChannelFactory
     @video_factory = video_factory
   end
 
-  def build(info)
-    entries = parse_entries(info)
+  def build(feed)
+    entries = parse_entries(feed)
     channel_entry = entries[0]
     video_list = make_video_list(entries.drop(1))
     channel_class.new(
@@ -107,8 +107,8 @@ class ChannelFactory
 
   attr_reader :entry_parser, :channel_class, :video_factory
 
-  def parse_entries(info)
-    entry_parser.run(info)
+  def parse_entries(feed)
+    entry_parser.run(feed)
   end
 
   def make_video_list(entries)
@@ -178,16 +178,16 @@ class EntryParser
     @page_downloader = page_downloader
   end
 
-  def run(info)
-    entries(page(info)).map { |entry| parse(entry) }
+  def run(feed)
+    entries(page(feed)).map { |entry| parse(entry) }
   end
 
   private
 
   attr_reader :tag_regex, :page_downloader
 
-  def page(info)
-    page_downloader.run(info)
+  def page(feed)
+    page_downloader.run(feed)
   end
 
   def entries(page)
