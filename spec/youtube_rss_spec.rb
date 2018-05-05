@@ -11,6 +11,18 @@ describe Main do
   end
 end
 
+describe Feed do
+  let(:id)      { "some_id" }
+  let(:type)    { "some_type" }
+  let(:comment) { "some comment" }
+  let(:info)    { "#{type}/#{id} # #{comment}" }
+  let(:feed)    { described_class.new(info: info) }
+
+  specify { expect(feed.id).to eql(id) }
+  specify { expect(feed.type).to eql(type) }
+  specify { expect(feed.comment).to eql(comment) }
+end
+
 describe ChannelFactory do
   let(:entry_parser_dbl)  { double("Entry Parser") }
   let(:video_factory_dbl) { double("Video Factory") }

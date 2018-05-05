@@ -24,6 +24,28 @@ class UserChannelList
   end
 end
 
+class Feed
+  def initialize(info:)
+    @info = info
+  end
+
+  def id
+    info.split("#")[0].split("/")[1].strip
+  end
+
+  def type
+    info.split("#")[0].split("/")[0].strip
+  end
+
+  def comment
+    info.split("#")[1].strip
+  end
+
+  private
+
+  attr_reader :info
+end
+
 # A list of the channels, as defined by the user's channel list file
 class ChannelList
   def initialize(
