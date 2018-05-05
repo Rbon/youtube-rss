@@ -140,9 +140,7 @@ end
 
 # Creates a valid youtube channel feed URL
 class URLMaker
-  def run(line)
-    line = line.split("#")[0].strip
-    type, id = line.split("/")
+  def run(id:, type:)
     URI(feed_types[type.to_sym] % id)
   end
 
