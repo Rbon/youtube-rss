@@ -311,22 +311,22 @@ class FeedCache
     @dir     = File.expand_path(dir)
   end
 
-  def run(id)
-    if !in_cache?(id)
-      updater.run(id)
-    elsif old?(id)
-      updater.run(id)
-    elsif empty?(id)
-      updater.run(id)
+  def run(feed)
+    if !in_cache?(feed.id)
+      updater.run(id: feed.id, type: feed.type)
+    elsif old?(feed.id)
+      updater.run(id: feed.id, type: feed.type)
+    elsif empty?(feed.id)
+      updater.run(id: feed.id, type: feed.type)
     end
-    feed(id)
+    read_feed(feed.id)
   end
 
   private
 
   attr_reader :updater, :reader, :dir
 
-  def feed(id)
+  def read_feed(id)
     reader.run(id)
   end
 
@@ -347,11 +347,7 @@ class FeedCache
   end
 
   def path(id)
-    "%s/%s" % [dir, strip(id)]
-  end
-
-  def strip(id)
-    id.split("#")[0].split("/")[1].strip
+    "%s/%s" % [dir, id]
   end
 end
 
