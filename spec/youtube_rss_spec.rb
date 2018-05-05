@@ -406,10 +406,10 @@ end
 describe FeedCacheUpdater do
   let(:downloader_double) { double("Feed Downloader") }
   let(:file_double)       { double("a file object") }
-  let(:id)                { "type/an_id # some comment" }
-  let(:expected_id)       { "an_id" }
+  let(:id)                { "an_id" }
+  let(:type)              { "a_type" }
   let(:dir)               { "testdir/testsubdir" }
-  let(:expected_path)     { File.expand_path("#{dir}/#{expected_id}") }
+  let(:expected_path)     { File.expand_path("#{dir}/#{id}") }
   let(:new_feed)          { :new_feed }
 
   let(:feed_cache_updater) do
@@ -420,11 +420,13 @@ describe FeedCacheUpdater do
 
   describe "#run" do
     it "downloads a new feed and writes it to the cache" do
-      expect(downloader_double).to receive(:run).with(id).and_return(new_feed)
+      expect(downloader_double).to receive(:run).
+        with(id: id, type: type).
+        and_return(new_feed)
       expect(File).to receive(:open).with(expected_path, "w").
         and_yield(file_double)
       expect(file_double).to receive(:write).with(new_feed)
-      feed_cache_updater.run(id)
+      feed_cache_updater.run(id: id, type: type)
     end
   end
 end

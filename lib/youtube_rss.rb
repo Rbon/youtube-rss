@@ -373,20 +373,20 @@ class FeedCacheUpdater
     @downloader = downloader
   end
 
-  def run(id)
-    File.open("#{dir}/#{strip(id)}", "w") { |file| file.write(new_feed(id)) }
+  def run(id:, type:)
+    File.open("#{dir}/#{id}", "w") do |file|
+      file.write(new_feed(
+        id:   id,
+        type: type))
+    end
   end
 
   private
 
   attr_reader :dir, :downloader
 
-  def new_feed(id)
-    downloader.run(id)
-  end
-
-  def strip(id)
-    id.split("#")[0].split("/")[1].strip
+  def new_feed(args)
+    downloader.run(args)
   end
 end
 
