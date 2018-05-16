@@ -39,11 +39,6 @@ describe FeedList do
 end
 
 describe ChannelFactory do
-  let(:entry_parser_dbl)  { double("Entry Parser") }
-  let(:video_factory_dbl) { double("Video Factory") }
-  let(:channel_class_dbl) { double("Channel Class") }
-  let(:name)              { "jackisanerd" }
-
   let(:entries) do
     [{
        id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
@@ -56,22 +51,26 @@ describe ChannelFactory do
     :video_entry2]
   end
 
+  let(:entry_parser)  { instance_double("EntryParser", run: entries) }
+  let(:video_factory) { instance_double("VideoFactory", build: :test_video) }
+  let(:channel_class) { class_double("Class") }
+  let(:name)          { "jackisanerd" }
+  let(:channel_args)  { {name: name, video_list: [:test_video, :test_video]} }
+  let(:input)         { :some_input }
+
   let(:channel_factory) do
     described_class.new(
-      entry_parser:  entry_parser_dbl,
-      video_factory: video_factory_dbl,
-      channel_class: channel_class_dbl)
+      entry_parser:  entry_parser,
+      video_factory: video_factory,
+      channel_class: channel_class)
   end
 
   describe "#build" do
     it "builds a channel object" do
-      expect(entry_parser_dbl).to receive(:run).and_return(entries)
-      expect(video_factory_dbl).to receive(:build).
-        and_return(:test_video).
-        exactly(2).times
-      expect(channel_class_dbl).to receive(:new).
-        with({name: name, video_list: [:test_video, :test_video]})
-      channel_factory.build(:test)
+      expect(entry_parser).to receive(:run).with(input)
+      expect(video_factory).to receive(:build).exactly(2).times
+      expect(channel_class).to receive(:new).with(channel_args)
+      channel_factory.build(input)
     end
   end
 end
