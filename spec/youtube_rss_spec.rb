@@ -300,6 +300,20 @@ describe SystemCaller do
   end
 end
 
+describe ScriptHalter do
+  describe "#run" do
+    let(:error_msg)     { "this is an error" }
+    let(:expected_puts) { "youtube-rss: #{error_msg}" }
+    let(:script_halter) { described_class.new }
+
+    it "prints the error message and halts the script" do
+      expect(script_halter).to receive(:puts).with(expected_puts)
+      expect(script_halter).to receive(:exit)
+      script_halter.run(error_msg)
+    end
+  end
+end
+
 describe EntryParser do
   let(:page)         { File.read("spec/fixtures/files/videos.xml") }
   let(:page_drl_dbl) { double("Page Downloader") }

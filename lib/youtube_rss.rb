@@ -323,6 +323,13 @@ class SystemCaller
   end
 end
 
+class ScriptHalter
+  def run(msg)
+    puts "youtube-rss: #{msg}"
+    exit
+  end
+end
+
 class FeedCache
   def initialize(
     reader:    FeedCacheReader.new,
