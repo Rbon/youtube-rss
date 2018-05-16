@@ -25,15 +25,14 @@ describe Feed do
 end
 
 describe FeedList do
-  let(:feed_class_double) { double("Feed Class") }
-  let(:fake_list)         { Array.new(5, :some_feed) }
-
-  let(:feed_list) { described_class.new(feed_class: feed_class_double) }
+  let(:feed_class) { class_double("Feed") }
+  let(:fake_list)  { Array.new(5, :some_feed) }
+  let(:feed_list)  { described_class.new(feed_class: feed_class) }
 
   describe "#list" do
     it "is a list of feeds" do
       expect(File).to receive(:readlines).and_return(fake_list)
-      expect(feed_class_double).to receive(:new).exactly(fake_list.length).times
+      expect(feed_class).to receive(:new).exactly(fake_list.length).times
       feed_list.list
     end
   end
