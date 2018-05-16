@@ -76,7 +76,7 @@ describe ChannelFactory do
 end
 
 describe Channel do
-  let(:video)      { double("Video") }
+  let(:video)      { instance_double("Video") }
   let(:name)       { "test channel" }
   let(:video_list) { [video, video] }
   let(:channel)    { described_class.new(name: name, video_list: video_list) }
