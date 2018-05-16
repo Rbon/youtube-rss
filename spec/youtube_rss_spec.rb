@@ -1,12 +1,13 @@
 require "youtube_rss"
 
 describe Main do
+  let(:channel_list) { instance_double("ChannelList") }
+  let(:main)         { described_class.new(channel_list: channel_list) }
+
   describe "#run" do
     it "tells the channel list to sync" do
-      # feed = File.read("spec/fixtures/files/videos.xml")
-      channel_list_dbl = double("Channel List")
-      expect(channel_list_dbl).to receive(:sync)
-      described_class.new(channel_list: channel_list_dbl).run
+      expect(channel_list).to receive(:sync)
+      main.run
     end
   end
 end
