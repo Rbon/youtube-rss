@@ -249,13 +249,17 @@ describe Cache do
 end
 
 describe VideoDownloader do
-  let(:downloader) { described_class.new }
+  let(:system_caller_double) { double("a system caller") }
+
+  let(:downloader) do
+    described_class.new(system_caller: system_caller_double)
+  end
 
   describe "#run" do
     context "given a valid youtube id" do
       it "downloads the video" do
         id = "testid"
-        expect(SystemCaller).to receive(:run).
+        expect(system_caller_double).to receive(:run).
           with("youtube-dl \"https://youtu.be/#{id}\"")
         downloader.run(id)
       end
@@ -264,13 +268,34 @@ describe VideoDownloader do
 end
 
 describe SystemCaller do
-  describe ".run" do
-    it "downloads the video" do
-      ARGV[0] = nil # this is a hack
-      command = "this is a command"
-      expect(described_class).to receive(:system).
-        with(command)
-      described_class.run(command)
+  describe "#run" do
+    let(:script_halter_double) { double("a script halter") }
+    let(:id)                   { "some id" }
+    let(:command)              { "this is a command" }
+    let(:error_msg)            { "error" }
+    let(:args)                 { [] }
+
+    let(:system_caller) do
+      described_class.new(
+        script_halter: script_halter_double,
+        args:          args)
+    end
+
+    context "the command exits without an error" do
+      it "downloads the video" do
+        expect(system_caller).to receive(:system).with(command).
+          and_return(true)
+        system_caller.run(command)
+      end
+    end
+
+    context "the command exits with an error" do
+      it "halts the script" do
+        expect(system_caller).to receive(:system).with(command).
+          and_return(false)
+        expect(script_halter_double).to receive(:run).with(error_msg)
+        system_caller.run(command)
+      end
     end
   end
 end
