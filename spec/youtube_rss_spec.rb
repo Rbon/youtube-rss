@@ -131,8 +131,8 @@ describe URLMaker do
 end
 
 describe VideoFactory do
-  let(:video_class_dbl) { double("Video Class") }
-  let(:video_factory)   { described_class.new(video_class: video_class_dbl) }
+  let(:video_class)   { class_double("Video") }
+  let(:video_factory) { described_class.new(video_class: video_class) }
 
   let(:entry) do
     {id:                "yt:video:Ah6xjqA0Cj0",
@@ -156,7 +156,7 @@ describe VideoFactory do
 
   describe "#build" do
     it "builds a youtube object" do
-      expect(video_class_dbl).to receive(:new).with(info: video_info)
+      expect(video_class).to receive(:new).with(info: video_info)
       video_factory.build(entry)
     end
   end
