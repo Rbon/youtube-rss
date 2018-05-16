@@ -254,15 +254,15 @@ end
 
 describe SystemCaller do
   describe "#run" do
-    let(:script_halter_double) { double("a script halter") }
-    let(:id)                   { "some id" }
-    let(:command)              { "this is a command" }
-    let(:error_msg)            { "error" }
-    let(:args)                 { [] }
+    let(:script_halter) { instance_double("ScriptHalter") }
+    let(:id)            { "some id" }
+    let(:command)       { "this is a command" }
+    let(:error_msg)     { "error" }
+    let(:args)          { [] }
 
     let(:system_caller) do
       described_class.new(
-        script_halter: script_halter_double,
+        script_halter: script_halter,
         args:          args)
     end
 
@@ -278,7 +278,7 @@ describe SystemCaller do
       it "halts the script" do
         expect(system_caller).to receive(:system).with(command).
           and_return(false)
-        expect(script_halter_double).to receive(:run).with(error_msg)
+        expect(script_halter).to receive(:run).with(error_msg)
         system_caller.run(command)
       end
     end
