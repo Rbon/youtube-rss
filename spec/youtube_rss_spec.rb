@@ -111,25 +111,21 @@ describe ChannelList do
 end
 
 describe URLMaker do
-  let(:url_start)       { "https://www.youtube.com/feeds/videos.xml?" }
-  let(:id)              { "some_id" }
-  let(:new_id_format)   { "channel_id=#{id}" }
-  let(:old_name_format) { "user=#{id}" }
+  let(:url_start)      { "https://www.youtube.com/feeds/videos.xml?" }
+  let(:id)             { "some_id" }
+  let(:channel_id_url) { URI(url_start + "channel_id=#{id}") }
+  let(:user_url)       { URI(url_start + "user=#{id}") }
+  let(:url_maker)      { described_class.new }
 
   describe "#run" do
     context "with the old username type" do
-      it "returns a proper user feed url" do
-        url = URI(url_start + old_name_format).to_s
-        expect(described_class.new.run(id: id, type: "user").to_s).to eql(url)
-      end
+      subject { url_maker.run(id: id, type: "user") }
+      it { should eql(user_url) }
     end
 
     context "with the new channel id type" do
-      it "returns a proper id feed url" do
-        url = URI(url_start + new_id_format).to_s
-        expect(described_class.new.run(id: id, type: "channel").to_s).
-          to eql(url)
-      end
+      subject { url_maker.run(id: id, type: "channel") }
+      it { should eql(channel_id_url) }
     end
   end
 end
