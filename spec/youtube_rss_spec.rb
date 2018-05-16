@@ -76,18 +76,15 @@ describe ChannelFactory do
 end
 
 describe Channel do
-  let(:video_dbl) { double("Video") }
-
-  let(:channel) do
-    described_class.new(
-      name:       "test channel",
-      video_list: [video_dbl, video_dbl])
-  end
+  let(:video)      { double("Video") }
+  let(:name)       { "test channel" }
+  let(:video_list) { [video, video] }
+  let(:channel)    { described_class.new(name: name, video_list: video_list) }
 
   describe "#sync" do
     it "downloads all the new videos" do
-      expect(video_dbl).to receive(:new?).exactly(2).times
-      expect(channel).to receive(:puts).with("test channel")
+      expect(video).to receive(:new?).exactly(2).times
+      expect(channel).to receive(:puts).with(name)
       channel.sync
     end
   end
