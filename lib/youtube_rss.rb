@@ -226,7 +226,7 @@ end
 
 # An object which contains info about a youtube video
 class Video
-  def initialize(info:, downloader: VideoDownloader.new, cache: Cache)
+  def initialize(info:, downloader: VideoDownloader.new, cache: Cache.new)
     @id           = info[:id]
     @title        = info[:title]
     @published    = Time.parse(info[:published])
@@ -263,23 +263,23 @@ end
 class Cache
   CACHE_FILENAME = File.expand_path("~/.config/youtube-rss/cache.json")
 
-  def self.update(time:, channel_name:)
+  def update(time:, channel_name:)
     cache = read
     cache[channel_name] = time
     write(cache)
   end
 
-  def self.sync_time(channel_name:)
+  def sync_time(channel_name:)
     Time.parse(read[channel_name] || "2018-04-18")
   end
 
   private_class_method
 
-  def self.write(data)
+  def write(data)
     File.open(CACHE_FILENAME, "w") { |file| JSON.dump(data, file) }
   end
 
-  def self.read
+  def read
     JSON.parse(File.read(CACHE_FILENAME))
   end
 end

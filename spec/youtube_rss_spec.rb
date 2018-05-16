@@ -163,7 +163,7 @@ describe VideoFactory do
 end
 
 describe Video do
-  let(:cache)        { class_double("Cache") }
+  let(:cache)        { instance_double("Cache") }
   let(:downloader)   { instance_double("VideoDownloader") }
   let(:id)           { "testid" }
   let(:time)         { "2000-01-01" }
@@ -211,29 +211,28 @@ describe Video do
   end
 end
 
+### This is just terrible
 describe Cache do
-  let(:time)         { "some time" }
-  let(:channel_name) { "test channel" }
+  let(:time)           { "some time" }
+  let(:channel_name)   { "test channel" }
+  let(:cache)          { described_class.new }
+  let(:empty_json)     { "{\"foo\": \"1\", \"bar\": \"2\"}" }
+  let(:not_empty_json) { "{\"foo\": \"1\", \"#{channel_name}\": \"#{time}\"}" }
+  let(:file_dbl)       { double("some file") }
 
   describe ".update" do
     context "when the channel name doesn't already exist in cache"
     it "updates the cache file" do
-      fake_json = "\"foo\": \"1\", \"bar\": \"2\""
-      fake_parsed_json = {"foo" => "1", "bar" => "2", channel_name => time}
-      expect(File).to receive(:read).and_return("{#{fake_json}}")
-      file_dbl = double("File")
+      expect(File).to receive(:read).and_return(empty_json)
       expect(File).to receive(:open).and_return(file_dbl)
-      Cache.update(time: time, channel_name: channel_name)
+      cache.update(time: time, channel_name: channel_name)
     end
 
     context "when the channel name already exists in the cache" do
       it "updates the cache file" do
-        fake_json = "\"foo\": \"1\", \"#{channel_name}\": \"#{time}\""
-        fake_parsed_json = {"foo" => "1", channel_name => time}
-        expect(File).to receive(:read).and_return("{#{fake_json}}")
-        file_dbl = double("File")
+        expect(File).to receive(:read).and_return(not_empty_json)
         expect(File).to receive(:open).and_return(file_dbl)
-        Cache.update(time: time, channel_name: channel_name)
+        cache.update(time: time, channel_name: channel_name)
       end
     end
   end
