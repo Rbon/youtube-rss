@@ -239,20 +239,15 @@ describe Cache do
 end
 
 describe VideoDownloader do
-  let(:system_caller_double) { double("a system caller") }
-
-  let(:downloader) do
-    described_class.new(system_caller: system_caller_double)
-  end
+  let(:system_caller) { instance_double("SystemCaller") }
+  let(:downloader)    { described_class.new(system_caller: system_caller) }
+  let(:id)            { "testid" }
+  let(:command)       { "youtube-dl \"https://youtu.be/#{id}\"" }
 
   describe "#run" do
-    context "given a valid youtube id" do
-      it "downloads the video" do
-        id = "testid"
-        expect(system_caller_double).to receive(:run).
-          with("youtube-dl \"https://youtu.be/#{id}\"")
-        downloader.run(id)
-      end
+    it "downloads the video" do
+      expect(system_caller).to receive(:run).with(command)
+      downloader.run(id)
     end
   end
 end
