@@ -163,11 +163,12 @@ describe VideoFactory do
 end
 
 describe Video do
-  let(:cache_dbl)      { double("Cache") }
-  let(:downloader_dbl) { double("Video Downloader") }
-  let(:id)             { "testid" }
-  let(:time)           { "2000-01-01" }
-  let(:channel_name)   { "test channel name" }
+  let(:cache)        { class_double("Cache") }
+  let(:downloader)   { instance_double("VideoDownloader") }
+  let(:id)           { "testid" }
+  let(:time)         { "2000-01-01" }
+  let(:channel_name) { "test channel name" }
+  let(:cache_args)   { {time: Time.parse(time), channel_name: channel_name} }
 
   let(:info) do
     {id:           id,
@@ -178,15 +179,15 @@ describe Video do
 
   let(:video) do
     described_class.new(
-      cache:      cache_dbl,
-      downloader: downloader_dbl,
+      cache:      cache,
+      downloader: downloader,
       info:       info)
   end
 
   describe "#new?" do
     context "when video is new" do
       it "returns true" do
-        expect(cache_dbl).to receive(:sync_time).
+        expect(cache).to receive(:sync_time).
           and_return(Time.parse("1999-01-01"))
         expect(video.new?).to be true
       end
@@ -194,7 +195,7 @@ describe Video do
 
     context "when video is old" do
       it "returns false" do
-        expect(cache_dbl).to receive(:sync_time).
+        expect(cache).to receive(:sync_time).
           and_return(Time.parse("2008-01-01"))
         expect(video.new?).to be false
       end
@@ -203,9 +204,8 @@ describe Video do
 
   describe "#download" do
     it "downloads a video" do
-      expect(downloader_dbl).to receive(:run).with(id)
-      expect(cache_dbl).to receive(:update).
-        with(time: Time.parse(time), channel_name: channel_name)
+      expect(downloader).to receive(:run).with(id)
+      expect(cache).to receive(:update).with(cache_args)
       video.download
     end
   end
