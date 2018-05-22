@@ -284,31 +284,6 @@ class DownloadRecord
   end
 end
 
-# DEAD
-class Cache
-  CACHE_FILENAME = File.expand_path("~/.config/youtube-rss/cache.json")
-
-  def update(time:, channel_name:)
-    cache = read
-    cache[channel_name] = time
-    write(cache)
-  end
-
-  def sync_time(channel_name:)
-    Time.parse(read[channel_name] || "2018-04-18")
-  end
-
-  private_class_method
-
-  def write(data)
-    File.open(CACHE_FILENAME, "w") { |file| JSON.dump(data, file) }
-  end
-
-  def read
-    JSON.parse(File.read(CACHE_FILENAME))
-  end
-end
-
 # Sends a message to System caller to run youtube-dl
 class VideoDownloader
   def initialize(

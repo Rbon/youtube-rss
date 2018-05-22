@@ -243,33 +243,6 @@ describe DownloadRecord do
   end
 end
 
-### This is just terrible
-describe Cache do
-  let(:time)           { "some time" }
-  let(:channel_name)   { "test channel" }
-  let(:cache)          { described_class.new }
-  let(:empty_json)     { "{\"foo\": \"1\", \"bar\": \"2\"}" }
-  let(:not_empty_json) { "{\"foo\": \"1\", \"#{channel_name}\": \"#{time}\"}" }
-  let(:file_dbl)       { double("some file") }
-
-  describe ".update" do
-    context "when the channel name doesn't already exist in cache"
-    it "updates the cache file" do
-      expect(File).to receive(:read).and_return(empty_json)
-      expect(File).to receive(:open).and_return(file_dbl)
-      cache.update(time: time, channel_name: channel_name)
-    end
-
-    context "when the channel name already exists in the cache" do
-      it "updates the cache file" do
-        expect(File).to receive(:read).and_return(not_empty_json)
-        expect(File).to receive(:open).and_return(file_dbl)
-        cache.update(time: time, channel_name: channel_name)
-      end
-    end
-  end
-end
-
 describe VideoDownloader do
   let(:system_caller) { instance_double("SystemCaller") }
   let(:downloader)    { described_class.new(system_caller: system_caller) }
