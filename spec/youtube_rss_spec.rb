@@ -217,24 +217,28 @@ describe Video do
 end
 
 describe DownloadRecord do
-  let(:file)        { double("some file") }
-  let(:time)        { :the_time }
-  let(:id)          { :the_id }
-  let(:record_data) { JSON.generate(time: time, id: id) }
-  let(:dir)         { "~/.config/youtube-rss/download_record" }
-  let(:channel)     { "the_channel" }
-  let(:path)        { File.expand_path("#{dir}/#{channel}") }
-  let(:file_args)   { [path, "w"] }
-
-  let(:download_record) do
-    described_class.new
-  end
+  let(:file)            { double("some file") }
+  let(:time)            { "the time" }
+  let(:id)              { "the id" }
+  let(:record_data)     { JSON.generate(time: time, id: id) }
+  let(:dir)             { "testpath" }
+  let(:channel)         { "the_channel" }
+  let(:path)            { File.expand_path("#{dir}/#{channel}") }
+  let(:file_args)       { [path, "w"] }
+  let(:download_record) { described_class.new(dir: dir) }
 
   describe "#write" do
     it "writes to the download record" do
       expect(File).to receive(:open).with(*file_args).and_yield(file)
       expect(file).to receive(:write).with(record_data)
       download_record.write(channel: channel, id: id, time: time)
+    end
+  end
+
+  describe "#read" do
+    it "returns the last recorded time" do
+      expect(File).to receive(:read).with(path).and_return(record_data)
+      expect(download_record.read(channel)).to eql(time)
     end
   end
 end

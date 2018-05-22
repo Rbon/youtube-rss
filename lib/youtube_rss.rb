@@ -267,7 +267,7 @@ class DownloadRecord
   end
 
   def read(channel)
-
+    JSON.parse(File.read(path(channel)))["time"]
   end
 
   def write(time:, channel:, id:)
