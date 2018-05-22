@@ -261,12 +261,26 @@ class Video
 end
 
 class DownloadRecord
+  def initialize(
+    dir:   "~/.config/youtube-rss/download_record")
+    @dir = dir
+  end
+
   def read(channel)
 
   end
 
   def write(time:, channel:, id:)
+    File.open(path(channel), "w") { |file|
+      file.write(JSON.generate(time: time, id: id)) }
+  end
 
+  private
+
+  attr_reader :dir
+
+  def path(channel)
+    File.expand_path("#{dir}/#{channel}")
   end
 end
 

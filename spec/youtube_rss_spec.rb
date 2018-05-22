@@ -216,6 +216,29 @@ describe Video do
   end
 end
 
+describe DownloadRecord do
+  let(:file)        { double("some file") }
+  let(:time)        { :the_time }
+  let(:id)          { :the_id }
+  let(:record_data) { JSON.generate(time: time, id: id) }
+  let(:dir)         { "~/.config/youtube-rss/download_record" }
+  let(:channel)     { "the_channel" }
+  let(:path)        { File.expand_path("#{dir}/#{channel}") }
+  let(:file_args)   { [path, "w"] }
+
+  let(:download_record) do
+    described_class.new
+  end
+
+  describe "#write" do
+    it "writes to the download record" do
+      expect(File).to receive(:open).with(*file_args).and_yield(file)
+      expect(file).to receive(:write).with(record_data)
+      download_record.write(channel: channel, id: id, time: time)
+    end
+  end
+end
+
 ### This is just terrible
 describe Cache do
   let(:time)           { "some time" }
