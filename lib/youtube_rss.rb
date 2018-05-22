@@ -267,7 +267,8 @@ class DownloadRecord
   end
 
   def read(channel)
-    JSON.parse(File.read(path(channel)))["time"]
+    return one_week_ago if !record_exist?(channel)
+    Time.parse(JSON.parse(File.read(path(channel)))["time"])
   end
 
   def write(time:, channel:, id:)
@@ -279,8 +280,16 @@ class DownloadRecord
 
   attr_reader :dir
 
+  def record_exist?(channel)
+    File.exist?(path(channel))
+  end
+
   def path(channel)
     File.expand_path("#{dir}/#{channel}")
+  end
+
+  def one_week_ago
+    Time.now - (60 * 60 * 24 * 7)
   end
 end
 

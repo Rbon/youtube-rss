@@ -218,7 +218,7 @@ end
 
 describe DownloadRecord do
   let(:file)            { double("some file") }
-  let(:time)            { "the time" }
+  let(:time)            { Time.parse("2001-04-05")}
   let(:id)              { "the id" }
   let(:record_data)     { JSON.generate(time: time, id: id) }
   let(:dir)             { "testpath" }
@@ -226,6 +226,7 @@ describe DownloadRecord do
   let(:path)            { File.expand_path("#{dir}/#{channel}") }
   let(:file_args)       { [path, "w"] }
   let(:download_record) { described_class.new(dir: dir) }
+  let(:old_time)        { (Time.now - (60 * 60 * 24 * 7)).to_s } # flimsy
 
   describe "#write" do
     it "writes to the download record" do
@@ -236,9 +237,19 @@ describe DownloadRecord do
   end
 
   describe "#read" do
-    it "returns the last recorded time" do
-      expect(File).to receive(:read).with(path).and_return(record_data)
-      expect(download_record.read(channel)).to eql(time)
+    context "when there is a recorded download" do
+      it "returns the time from the record" do
+        expect(File).to receive(:exist?).and_return(true)
+        expect(File).to receive(:read).with(path).and_return(record_data)
+        expect(download_record.read(channel)).to eql(time)
+      end
+    end
+
+    context "when there is no recorded download" do
+      it "returns an older time" do
+        expect(File).to receive(:exist?).and_return(false)
+        expect(download_record.read(channel).to_s).to eql(old_time)
+      end
     end
   end
 end
