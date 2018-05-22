@@ -163,12 +163,17 @@ describe VideoFactory do
 end
 
 describe Video do
-  let(:cache)        { instance_double("Cache") }
-  let(:downloader)   { instance_double("VideoDownloader") }
-  let(:id)           { "testid" }
-  let(:time)         { "2000-01-01" }
-  let(:channel_name) { "test channel name" }
-  let(:cache_args)   { {time: Time.parse(time), channel_name: channel_name} }
+  let(:download_record) { instance_double("DownloadRecord") }
+  let(:downloader)      { instance_double("VideoDownloader") }
+  let(:id)              { "testid" }
+  let(:time)            { "2000-01-01" }
+  let(:channel_name)    { "test channel name" }
+
+  let(:record_args) do
+    {time:    Time.parse(time),
+     channel: channel_name,
+     id:      id}
+  end
 
   let(:info) do
     {id:           id,
@@ -179,15 +184,15 @@ describe Video do
 
   let(:video) do
     described_class.new(
-      cache:      cache,
-      downloader: downloader,
-      info:       info)
+      download_record: download_record,
+      downloader:      downloader,
+      info:            info)
   end
 
   describe "#new?" do
     context "when video is new" do
       it "returns true" do
-        expect(cache).to receive(:sync_time).
+        expect(download_record).to receive(:read).
           and_return(Time.parse("1999-01-01"))
         expect(video.new?).to be true
       end
@@ -195,7 +200,7 @@ describe Video do
 
     context "when video is old" do
       it "returns false" do
-        expect(cache).to receive(:sync_time).
+        expect(download_record).to receive(:read).
           and_return(Time.parse("2008-01-01"))
         expect(video.new?).to be false
       end
@@ -205,7 +210,7 @@ describe Video do
   describe "#download" do
     it "downloads a video" do
       expect(downloader).to receive(:run).with(id)
-      expect(cache).to receive(:update).with(cache_args)
+      expect(download_record).to receive(:write).with(record_args)
       video.download
     end
   end

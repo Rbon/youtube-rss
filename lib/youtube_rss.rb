@@ -226,13 +226,16 @@ end
 
 # An object which contains info about a youtube video
 class Video
-  def initialize(info:, downloader: VideoDownloader.new, cache: Cache.new)
-    @id           = info[:id]
-    @title        = info[:title]
-    @published    = Time.parse(info[:published])
-    @channel_name = info[:channel_name]
-    @downloader   = downloader
-    @cache        = cache
+  def initialize(
+    info:,
+    downloader:        VideoDownloader.new,
+    download_record:   DownloadRecord.new)
+    @id              = info[:id]
+    @title           = info[:title]
+    @published       = Time.parse(info[:published])
+    @channel_name    = info[:channel_name]
+    @downloader      = downloader
+    @download_record = download_record
   end
 
   def new?
@@ -246,20 +249,28 @@ class Video
 
   private
 
-  attr_reader :id, :published, :title, :description, :channel_name,
-              :cache, :downloader
+  attr_reader :id, :published, :channel_name, :download_record, :downloader
 
   def sync_time(channel_name)
-    cache.sync_time(channel_name: channel_name)
+    download_record.read(channel_name)
   end
 
   def update_cache
-    cache.update(time: published, channel_name: channel_name)
+    download_record.write(time: published, channel: channel_name, id: id)
   end
 end
 
-# A class which represents the cache file used for this script.
-# Contains methods for reading and writing to the cache file.
+class DownloadRecord
+  def read(channel)
+
+  end
+
+  def write(time:, channel:, id:)
+
+  end
+end
+
+# DEAD
 class Cache
   CACHE_FILENAME = File.expand_path("~/.config/youtube-rss/cache.json")
 
