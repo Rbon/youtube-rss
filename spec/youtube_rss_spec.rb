@@ -367,65 +367,65 @@ describe PageDownloader do
 end
 
 describe FeedCache do
-  let(:updater_double)  { double("a feed cache updater") }
-  let(:reader_double)   { double("a feed cache reader") }
-  let(:dir)             { "spec/fixtures/files/" }
-  let(:existing_id)     { "videos.xml" }
-  let(:old_time)        { Time.now - (13 * 3600) }
-  let(:new_id)          { "an_id" }
-  let(:feed_double)     { double("a feed") }
+  let(:updater)     { instance_double("FeedCacheUpdater") }
+  let(:reader)      { instance_double("FeedCacheReader") }
+  let(:dir)         { "spec/fixtures/files/" }
+  let(:existing_id) { "videos.xml" }
+  let(:old_time)    { Time.now - (13 * 3600) }
+  let(:new_id)      { "an_id" }
+  let(:feed)        { double("a feed") }
 
   let(:feed_cache) do
     described_class.new(
-      updater: updater_double,
-      reader:  reader_double,
+      updater: updater,
+      reader:  reader,
       dir:     dir)
   end
 
   describe "#run" do
     context "when there is no cached feed" do
       it "updates the cache, returns the new feed" do
-        allow(feed_double).to receive(:id).and_return(new_id)
-        allow(feed_double).to receive(:type).and_return(:some_type)
-        expect(updater_double).to receive(:run).
+        allow(feed).to receive(:id).and_return(new_id)
+        allow(feed).to receive(:type).and_return(:some_type)
+        expect(updater).to receive(:run).
           with(id: new_id, type: :some_type)
-        expect(reader_double).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(feed_double)).to eql(:the_feed)
+        expect(reader).to receive(:run).and_return(:the_feed)
+        expect(feed_cache.run(feed)).to eql(:the_feed)
       end
     end
 
     context "when the file is not old or empty" do
       it "returns that feed" do
-        allow(feed_double).to receive(:id).and_return(existing_id)
-        allow(feed_double).to receive(:type).and_return(:some_type)
+        allow(feed).to receive(:id).and_return(existing_id)
+        allow(feed).to receive(:type).and_return(:some_type)
         expect(File).to receive(:mtime).and_return(Time.now)
-        expect(reader_double).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(feed_double)).to eql(:the_feed)
+        expect(reader).to receive(:run).and_return(:the_feed)
+        expect(feed_cache.run(feed)).to eql(:the_feed)
       end
     end
 
     context "when the file is old" do
       it "overwrites that file with a new download, and returns its content" do
-        allow(feed_double).to receive(:id).and_return(existing_id)
-        allow(feed_double).to receive(:type).and_return(:some_type)
+        allow(feed).to receive(:id).and_return(existing_id)
+        allow(feed).to receive(:type).and_return(:some_type)
         expect(File).to receive(:mtime).and_return(old_time)
-        expect(updater_double).to receive(:run).
+        expect(updater).to receive(:run).
           with(id: existing_id, type: :some_type)
-        expect(reader_double).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(feed_double)).to eql(:the_feed)
+        expect(reader).to receive(:run).and_return(:the_feed)
+        expect(feed_cache.run(feed)).to eql(:the_feed)
       end
     end
 
     context "when the file is empty" do
       it "overwrites that file with a new download, and returns its content" do
-        allow(feed_double).to receive(:id).and_return(existing_id)
-        allow(feed_double).to receive(:type).and_return(:some_type)
+        allow(feed).to receive(:id).and_return(existing_id)
+        allow(feed).to receive(:type).and_return(:some_type)
         expect(File).to receive(:mtime).and_return(Time.now)
         expect(File).to receive(:zero?).and_return(true)
-        expect(updater_double).to receive(:run).
+        expect(updater).to receive(:run).
           with(id: existing_id, type: :some_type)
-        expect(reader_double).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(feed_double)).to eql(:the_feed)
+        expect(reader).to receive(:run).and_return(:the_feed)
+        expect(feed_cache.run(feed)).to eql(:the_feed)
       end
     end
   end
