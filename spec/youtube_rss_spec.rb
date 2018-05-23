@@ -373,20 +373,45 @@ describe FeedCache do
   let(:existing_id) { "videos.xml" }
   let(:old_time)    { Time.now - (13 * 3600) }
   let(:new_id)      { "an_id" }
-  let(:feed)        { instance_double("Feed") }
 
   let(:new_feed) do
-    double(
-      "a feed with a new id",
-       id:   new_id,
-       type: :some_type)
+    instance_double(
+      "Feed",
+       id:        new_id,
+       type:      :some_type,
+       old?:      false,
+       in_cache?: false,
+       empty?:    false)
   end
 
   let(:existing_feed) do
-    double(
-      "a feed with an existing id",
-      id:   existing_id,
-      type: :some_type)
+    instance_double(
+      "Feed",
+       id:        existing_id,
+       type:      :some_type,
+       old?:      false,
+       in_cache?: true,
+       empty?:    false)
+  end
+
+  let(:old_feed) do
+    instance_double(
+      "Feed",
+       id:        existing_id,
+       type:      :some_type,
+       old?:      true,
+       in_cache?: true,
+       empty?:    false)
+  end
+
+  let(:empty_feed) do
+    instance_double(
+      "Feed",
+       id:        existing_id,
+       type:      :some_type,
+       old?:      true,
+       in_cache?: true,
+       empty?:    true)
   end
 
   let(:feed_cache) do
@@ -407,7 +432,6 @@ describe FeedCache do
 
     context "when the file is not old or empty" do
       it "returns that feed" do
-        expect(File).to receive(:mtime).and_return(Time.now)
         expect(reader).to receive(:run).and_return(:the_feed)
         expect(feed_cache.run(existing_feed)).to eql(:the_feed)
       end
@@ -415,20 +439,17 @@ describe FeedCache do
 
     context "when the file is old" do
       it "overwrites that file with a new download, and returns its content" do
-        expect(File).to receive(:mtime).and_return(old_time)
         expect(updater).to receive(:run).with(id: existing_id, type: :some_type)
         expect(reader).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(existing_feed)).to eql(:the_feed)
+        expect(feed_cache.run(old_feed)).to eql(:the_feed)
       end
     end
 
     context "when the file is empty" do
       it "overwrites that file with a new download, and returns its content" do
-        expect(File).to receive(:mtime).and_return(Time.now)
-        expect(File).to receive(:zero?).and_return(true)
         expect(updater).to receive(:run).with(id: existing_id, type: :some_type)
         expect(reader).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(existing_feed)).to eql(:the_feed)
+        expect(feed_cache.run(empty_feed)).to eql(:the_feed)
       end
     end
   end

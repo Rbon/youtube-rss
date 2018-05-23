@@ -40,25 +40,48 @@ class FeedList
 end
 
 class Feed
-  def initialize(info:)
+  def initialize(
+    info:,
+    dir:    "~/.config/youtube-rss/feed-cache")
     @info = info
+    @dir  = File.expand_path(dir)
   end
 
   def id
-    info.split("#")[0].split("/")[1].strip
+    @id ||= info.split("#")[0].split("/")[1].strip
   end
 
   def type
-    info.split("#")[0].split("/")[0].strip
+    @type ||= info.split("#")[0].split("/")[0].strip
   end
 
   def comment
-    info.split("#")[1].strip
+    @comment ||= info.split("#")[1].strip
+  end
+
+  def in_cache?
+    File.file?(path)
+  end
+
+  def old?
+    File.mtime(path) < age_cutoff
+  end
+
+  def empty?
+    File.zero?(path)
   end
 
   private
 
   attr_reader :info
+
+  def age_cutoff
+    Time.now - 43200
+  end
+
+  def path
+    "%s/%s" % [dir, id]
+  end
 end
 
 # A list of the channels, as defined by the user's channel list file
@@ -350,11 +373,11 @@ class FeedCache
   end
 
   def run(feed)
-    if !in_cache?(feed.id)
+    if !feed.in_cache?
       updater.run(id: feed.id, type: feed.type)
-    elsif old?(feed.id)
+    elsif feed.old?
       updater.run(id: feed.id, type: feed.type)
-    elsif empty?(feed.id)
+    elsif feed.empty?
       updater.run(id: feed.id, type: feed.type)
     end
     read_feed(feed.id)
@@ -366,26 +389,6 @@ class FeedCache
 
   def read_feed(id)
     reader.run(id)
-  end
-
-  def in_cache?(id)
-    File.file?(path(id))
-  end
-
-  def old?(id)
-    File.mtime(path(id)) < age_cutoff
-  end
-
-  def empty?(id)
-    File.zero?(path(id))
-  end
-
-  def age_cutoff
-    Time.now - 43200
-  end
-
-  def path(id)
-    "%s/%s" % [dir, id]
   end
 end
 
