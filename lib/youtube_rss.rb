@@ -97,7 +97,7 @@ class ChannelFactory
   def build(feed)
     entries = parse_entries(feed)
     channel_entry = entries[0]
-    video_list = make_video_list(entries.drop(1))
+    video_list = make_video_list(entries.drop(1)).reverse
     channel_class.new(
       name: channel_entry[:name],
       video_list: video_list)
