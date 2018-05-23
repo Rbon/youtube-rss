@@ -354,13 +354,13 @@ describe EntryParser do
 end
 
 describe PageDownloader do
-  let(:http_dbl)        { double("HTTP") }
-  let(:page_downloader) { described_class.new(http: http_dbl) }
-  let(:url)           { "some url" }
+  let(:http)            { instance_double("Net::HTTP") }
+  let(:page_downloader) { described_class.new(http: http) }
+  let(:url)             { "some url" }
 
   describe "#run" do
     it "downloads the page" do
-      expect(http_dbl).to receive(:get).with(url)
+      expect(http).to receive(:get).with(url)
       page_downloader.run(url)
     end
   end
