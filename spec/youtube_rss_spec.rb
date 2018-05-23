@@ -375,6 +375,20 @@ describe FeedCache do
   let(:new_id)      { "an_id" }
   let(:feed)        { double("a feed") }
 
+  let(:new_feed) do
+    double(
+      "a feed with a new id",
+       id:   new_id,
+       type: :some_type)
+  end
+
+  let(:existing_feed) do
+    double(
+      "a feed with an existing id",
+      id:   existing_id,
+      type: :some_type)
+  end
+
   let(:feed_cache) do
     described_class.new(
       updater: updater,
@@ -385,22 +399,18 @@ describe FeedCache do
   describe "#run" do
     context "when there is no cached feed" do
       it "updates the cache, returns the new feed" do
-        allow(feed).to receive(:id).and_return(new_id)
-        allow(feed).to receive(:type).and_return(:some_type)
         expect(updater).to receive(:run).
           with(id: new_id, type: :some_type)
         expect(reader).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(feed)).to eql(:the_feed)
+        expect(feed_cache.run(new_feed)).to eql(:the_feed)
       end
     end
 
     context "when the file is not old or empty" do
       it "returns that feed" do
-        allow(feed).to receive(:id).and_return(existing_id)
-        allow(feed).to receive(:type).and_return(:some_type)
         expect(File).to receive(:mtime).and_return(Time.now)
         expect(reader).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(feed)).to eql(:the_feed)
+        expect(feed_cache.run(existing_feed)).to eql(:the_feed)
       end
     end
 
