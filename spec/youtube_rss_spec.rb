@@ -316,9 +316,10 @@ describe ScriptHalter do
 end
 
 describe EntryParser do
-  let(:page)         { File.read("spec/fixtures/files/videos.xml") }
-  let(:page_drl_dbl) { double("Page Downloader") }
-  let(:entry_parser) { described_class.new(page_downloader: page_drl_dbl) }
+  let(:page)            { File.read("spec/fixtures/files/videos.xml") }
+  let(:page_downloader) { instance_double("PageDownloader") }
+
+  let(:entry_parser) { described_class.new(page_downloader: page_downloader) }
 
   let(:channel_entry) do
     {id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
@@ -344,7 +345,7 @@ describe EntryParser do
 
   describe "#run" do
     it "returns an array of parsed entries" do
-      expect(page_drl_dbl).to receive(:run).and_return(page)
+      expect(page_downloader).to receive(:run).and_return(page)
       entries = entry_parser.run(:test)
       expect(entries[0]).to eql(channel_entry)
       expect(entries[1]).to eql(video_entry)
