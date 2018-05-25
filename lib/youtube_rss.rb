@@ -216,14 +216,15 @@ class EntryParser
   end
 
   def parse(entry)
-    output = {}
-    entry.lines.map do |line|
-      tag_regex.match(line) do |match|
-        tag = match[:tag].tr(":", "_").to_sym
-        output[tag] = match[:value]
-      end
-    end
-    output
+    entry.lines.inject({}) { |hash, line| hash.merge((parse_line(line) || {})) }
+  end
+
+  def parse_line(line)
+    tag_regex.match(line) { |match| {clean(match[:tag]) => match[:value]} }
+  end
+
+  def clean(tag)
+    tag.tr(":", "_").to_sym
   end
 end
 
