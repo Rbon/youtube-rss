@@ -73,7 +73,7 @@ class Feed
 
   private
 
-  attr_reader :info
+  attr_reader :info, :dir
 
   def age_cutoff
     Time.now - 43200
