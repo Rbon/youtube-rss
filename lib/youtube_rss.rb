@@ -81,7 +81,7 @@ end
 class ChannelList
   def initialize(
     feed_list:       FeedList.new.list,
-    channel_class:   Channel.new)
+    channel_class:   Channel)
     @channel_class = channel_class
     @feed_list     = feed_list
   end
