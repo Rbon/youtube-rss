@@ -80,10 +80,10 @@ end
 # A list of the channels, as defined by the user's channel list file
 class ChannelList
   def initialize(
-    feed_list:         FeedList.new.list,
-    channel_factory:   ChannelFactory.new)
-    @channel_factory = channel_factory
-    @feed_list       = feed_list
+    feed_list:       FeedList.new.list,
+    channel_class:   Channel.new)
+    @channel_class = channel_class
+    @feed_list     = feed_list
   end
 
   def sync
@@ -92,43 +92,10 @@ class ChannelList
 
   private
 
-  attr_reader :feed_list, :channel_factory
+  attr_reader :feed_list, :channel_class
 
   def list
-    feed_list.map { |feed| channel_factory.build(feed) }
-  end
-end
-
-# Builds a channel object
-class ChannelFactory
-  def initialize(
-    entry_parser:    EntryParser.new,
-    channel_class:   Channel,
-    video_factory:   VideoFactory.new)
-    @entry_parser  = entry_parser
-    @channel_class = channel_class
-    @video_factory = video_factory
-  end
-
-  def build(feed)
-    entries = parse_entries(feed)
-    channel_entry = entries[0]
-    video_list = make_video_list(entries.drop(1)).reverse
-    channel_class.new(
-      name: channel_entry[:name],
-      video_list: video_list)
-  end
-
-  private
-
-  attr_reader :entry_parser, :channel_class, :video_factory
-
-  def parse_entries(feed)
-    entry_parser.run(feed)
-  end
-
-  def make_video_list(entries)
-    entries.map { |entry| video_factory.build(entry) }
+    feed_list.map { |feed| channel_class.new(feed: feed) }
   end
 end
 

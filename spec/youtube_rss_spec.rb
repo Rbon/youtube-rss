@@ -83,43 +83,6 @@ describe FeedList do
   end
 end
 
-describe ChannelFactory do
-  let(:entries) do
-    [{
-       id:           "yt:channel:UCTjqo_3046IXFFGZ_M5jedA",
-       name:         name,
-       published:    "2011-04-20T07:27:32+00:00",
-       title:        "jackisanerd",
-       yt_channelId: "UCTjqo_3046IXFFGZ_M5jedA",
-       uri: "https://www.youtube.com/channel/UCTjqo_3046IXFFGZ_M5jedA"},
-    :video_entry1,
-    :video_entry2]
-  end
-
-  let(:entry_parser)  { instance_double("EntryParser", run: entries) }
-  let(:video_factory) { instance_double("VideoFactory", build: :test_video) }
-  let(:channel_class) { class_double("Class") }
-  let(:name)          { "jackisanerd" }
-  let(:channel_args)  { {name: name, video_list: [:test_video, :test_video]} }
-  let(:input)         { :some_input }
-
-  let(:channel_factory) do
-    described_class.new(
-      entry_parser:  entry_parser,
-      video_factory: video_factory,
-      channel_class: channel_class)
-  end
-
-  describe "#build" do
-    it "builds a channel object" do
-      expect(entry_parser).to receive(:run).with(input)
-      expect(video_factory).to receive(:build).exactly(2).times
-      expect(channel_class).to receive(:new).with(channel_args)
-      channel_factory.build(input)
-    end
-  end
-end
-
 describe Channel do
   let(:name)          { "test channel" }
   let(:entries)       { [{name: name}, :video_entry1, :video_entry2]}
@@ -147,19 +110,19 @@ describe Channel do
 end
 
 describe ChannelList do
-  let(:channel)         { instance_double("Channel") }
-  let(:channel_factory) { instance_double("ChannelFactory", build: channel) }
-  let(:feed_list)       { ["user/testuser1", "user/testuser2"] }
+  let(:channel)       { instance_double("Channel") }
+  let(:channel_class) { class_double("Channel", new: channel) }
+  let(:feed_list)     { ["user/testuser1", "user/testuser2"] }
 
   let(:channel_list) do
     described_class.new(
-      channel_factory: channel_factory,
-      feed_list:       feed_list)
+      channel_class: channel_class,
+      feed_list:     feed_list)
   end
 
   describe "#sync" do
     it "tells each channel to sync" do
-      expect(channel_factory).to receive(:build).exactly(feed_list.length).times
+      expect(channel_class).to receive(:new).exactly(feed_list.length).times
       expect(channel).to receive(:sync).exactly(feed_list.length).times
       channel_list.sync
     end
