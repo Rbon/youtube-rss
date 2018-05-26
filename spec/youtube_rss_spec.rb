@@ -15,13 +15,16 @@ end
 describe Feed do
   let(:id_in_cache)       { "videos.xml" }
   let(:id_not_in_cache)   { "some_bad_id" }
+  let(:empty_file_id)     { "empty_file" }
   let(:type)              { "some_type" }
   let(:comment)           { "some comment" }
   let(:info_in_cache)     { "#{type}/#{id_in_cache} # #{comment}" }
   let(:info_not_in_cache) { "#{type}/#{id_not_in_cache} # #{comment}" }
+  let(:empty_file_info)   { "#{type}/#{empty_file_id} # #{comment}" }
   let(:dir)               { "spec/fixtures/files" }
   let(:in_cache_env)      { {info: info_in_cache, dir: dir} }
   let(:not_in_cache_env)  { {info: info_not_in_cache, dir: dir} }
+  let(:empty_file_env)    { {info: empty_file_info, dir: dir} }
   let(:old_time)          { Time.now - 43200 }
   let(:feed)              { described_class.new(in_cache_env) }
 
@@ -50,6 +53,18 @@ describe Feed do
         expect(File).to receive(:mtime).and_return(Time.now)
         expect(feed.old?).to be false
       end
+    end
+  end
+
+  describe "#empty?" do
+    context "when the cache file is empty" do
+      subject { described_class.new(empty_file_env).empty? }
+      it { should be true }
+    end
+
+    context "when the cache file is not empty" do
+      subject { described_class.new(in_cache_env).empty? }
+      it { should be false }
     end
   end
 end
