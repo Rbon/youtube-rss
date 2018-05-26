@@ -121,13 +121,13 @@ describe ChannelFactory do
 end
 
 describe Channel do
-  let(:name)       { "test channel" }
-  let(:entries)      { [{name: name}, :video_entry1, :video_entry2]}
-  let(:feed)       { instance_double("Feed") }
-  let(:video)      { instance_double("Video") }
+  let(:name)          { "test channel" }
+  let(:entries)       { [{name: name}, :video_entry1, :video_entry2]}
+  let(:feed)          { instance_double("Feed") }
+  let(:video)         { instance_double("Video") }
   let(:video_factory) { instance_double("VideoFactory", build: video) }
-  let(:entry_parser) { instance_double("EntryParser", run: entries) }
-  let(:video_list) { [video, video] }
+  let(:entry_parser)  { instance_double("EntryParser", run: entries) }
+  let(:video_list)    { [video, video] }
 
   let(:channel) do
     described_class.new(
