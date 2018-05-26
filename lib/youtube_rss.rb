@@ -40,23 +40,16 @@ class FeedList
 end
 
 class Feed
+  attr_reader :id, :type, :comment
+
   def initialize(
     info:,
-    dir:    "~/.config/youtube-rss/feed-cache")
-    @info = info
-    @dir  = File.expand_path(dir)
-  end
-
-  def id
-    @id ||= info.split("#")[0].split("/")[1].strip
-  end
-
-  def type
-    @type ||= info.split("#")[0].split("/")[0].strip
-  end
-
-  def comment
-    @comment ||= info.split("#")[1].strip
+    dir:       "~/.config/youtube-rss/feed-cache")
+    @info    = info
+    @dir     = File.expand_path(dir)
+    @id      = info.split("#")[0].split("/")[1].strip
+    @type    = info.split("#")[0].split("/")[0].strip
+    @comment = info.split("#")[1].strip
   end
 
   def in_cache?

@@ -13,15 +13,45 @@ describe Main do
 end
 
 describe Feed do
-  let(:id)      { "some_id" }
-  let(:type)    { "some_type" }
-  let(:comment) { "some comment" }
-  let(:info)    { "#{type}/#{id} # #{comment}" }
-  let(:feed)    { described_class.new(info: info) }
+  let(:id_in_cache)       { "videos.xml" }
+  let(:id_not_in_cache)   { "some_bad_id" }
+  let(:type)              { "some_type" }
+  let(:comment)           { "some comment" }
+  let(:info_in_cache)     { "#{type}/#{id_in_cache} # #{comment}" }
+  let(:info_not_in_cache) { "#{type}/#{id_not_in_cache} # #{comment}" }
+  let(:dir)               { "spec/fixtures/files" }
+  let(:in_cache_env)      { {info: info_in_cache, dir: dir} }
+  let(:not_in_cache_env)  { {info: info_not_in_cache, dir: dir} }
+  let(:old_time)          { Time.now - 43200 }
+  let(:feed)              { described_class.new(in_cache_env) }
 
-  specify { expect(feed.id).to eql(id) }
-  specify { expect(feed.type).to eql(type) }
-  specify { expect(feed.comment).to eql(comment) }
+  describe "#in_cache?" do
+    context "when it is in the cache" do
+      subject { described_class.new(in_cache_env).in_cache? }
+      it { should be true }
+    end
+
+    context "when it is not in the cache" do
+      subject { described_class.new(not_in_cache_env).in_cache? }
+      it { should be false }
+    end
+  end
+
+  describe "#old?" do
+    context "when it is old" do
+      it "should be true" do
+        expect(File).to receive(:mtime).and_return(old_time)
+        expect(feed.old?).to be true
+      end
+    end
+
+    context "when it is not old" do
+      it "should be true" do
+        expect(File).to receive(:mtime).and_return(Time.now)
+        expect(feed.old?).to be false
+      end
+    end
+  end
 end
 
 describe FeedList do
