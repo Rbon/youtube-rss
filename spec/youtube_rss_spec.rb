@@ -200,7 +200,7 @@ describe VideoFactory do
   end
 
   describe "#build" do
-    it "builds a youtube object" do
+    it "builds a video object" do
       expect(video_class).to receive(:new).with(info: video_info)
       video_factory.build(entry)
     end
