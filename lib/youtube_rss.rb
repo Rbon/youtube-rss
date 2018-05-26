@@ -135,9 +135,13 @@ end
 # An object which represents the youtube channels.
 # Contains a list of its videos, and can sync new videos if they are new
 class Channel
-  def initialize(name:, video_list:)
-    @name       = name
-    @video_list = video_list
+  def initialize(
+    feed:,
+    entry_parser:    EntryParser.new,
+    video_factory:   VideoFactory.new)
+    @feed          = feed
+    @entry_parser  = entry_parser
+    @video_factory = video_factory
   end
 
   def sync
@@ -147,10 +151,26 @@ class Channel
 
   private
 
-  attr_reader :name, :video_list
+  attr_reader :feed, :entry_parser, :video_factory
+
+  def name
+    info[:name]
+  end
+
+  def info
+    @info ||= entries[0]
+  end
 
   def new_videos
     video_list.select(&:new?)
+  end
+
+  def video_list
+    entries.drop(1).map { |entry| video_factory.build(entry) }.reverse
+  end
+
+  def entries
+    @entries ||= entry_parser.run(feed)
   end
 end
 

@@ -121,13 +121,24 @@ describe ChannelFactory do
 end
 
 describe Channel do
-  let(:video)      { instance_double("Video") }
   let(:name)       { "test channel" }
+  let(:entries)      { [{name: name}, :video_entry1, :video_entry2]}
+  let(:feed)       { instance_double("Feed") }
+  let(:video)      { instance_double("Video") }
+  let(:video_factory) { instance_double("VideoFactory", build: video) }
+  let(:entry_parser) { instance_double("EntryParser", run: entries) }
   let(:video_list) { [video, video] }
-  let(:channel)    { described_class.new(name: name, video_list: video_list) }
+
+  let(:channel) do
+    described_class.new(
+      feed:          feed,
+      entry_parser:  entry_parser,
+      video_factory: video_factory)
+  end
 
   describe "#sync" do
     it "downloads all the new videos" do
+      expect(entry_parser).to receive(:run)
       expect(video).to receive(:new?).exactly(2).times
       expect(channel).to receive(:puts).with(name)
       channel.sync
