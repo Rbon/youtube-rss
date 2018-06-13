@@ -247,8 +247,7 @@ class Video
   end
 
   def download
-    downloader.run(id)
-    update_cache
+    downloader.run(time: published, channel: channel_name, id: id)
   end
 
   private
@@ -257,10 +256,6 @@ class Video
 
   def sync_time(channel_name)
     download_record.read(channel_name)
-  end
-
-  def update_cache
-    download_record.write(time: published, channel: channel_name, id: id)
   end
 end
 
@@ -300,47 +295,37 @@ end
 # Sends a message to System caller to run youtube-dl
 class VideoDownloader
   def initialize(
-    system_caller:   SystemCaller.new)
-    @system_caller = system_caller
+    system_caller:     SystemCaller.new,
+    download_record:   DownloadRecord.new)
+    @system_caller   = system_caller
+    @download_record = download_record
   end
 
-  def run(id)
-    system_caller.run("youtube-dl \"https://youtu.be/#{id}\"")
+  def run(id:, time:, channel:)
+    if system_caller.run("youtube-dl \"https://youtu.be/#{id}\"")
+      download_record.write(id: id, time: time, channel: channel)
+    end
   end
 
   private
 
-  attr_reader :system_caller
+  attr_reader :system_caller, :download_record
 end
 
-# Ensures commands are run in the proper directory
 class SystemCaller
   def initialize(
-    script_halter:   ScriptHalter.new,
-    args:            ARGV)
-    @script_halter = script_halter
-    @args          = args
+    args:   ARGV)
+    @args = args
   end
 
   def run(command)
     dl_path = args[0] || "."
-    Dir.chdir(File.expand_path(dl_path)) { halt("error") if !system(command) }
+    Dir.chdir(File.expand_path(dl_path)) { system(command) }
   end
 
   private
 
-  attr_reader :script_halter, :args
-
-  def halt(msg)
-    script_halter.run(msg)
-  end
-end
-
-class ScriptHalter
-  def run(msg)
-    puts "youtube-rss: #{msg}"
-    exit
-  end
+  attr_reader :args
 end
 
 class FeedCache

@@ -188,7 +188,7 @@ describe Video do
   let(:time)            { "2000-01-01" }
   let(:channel_name)    { "test channel name" }
 
-  let(:record_args) do
+  let(:download_args) do
     {time:    Time.parse(time),
      channel: channel_name,
      id:      id}
@@ -228,8 +228,7 @@ describe Video do
 
   describe "#download" do
     it "downloads a video" do
-      expect(downloader).to receive(:run).with(id)
-      expect(download_record).to receive(:write).with(record_args)
+      expect(downloader).to receive(:run)
       video.download
     end
   end
@@ -274,62 +273,56 @@ describe DownloadRecord do
 end
 
 describe VideoDownloader do
-  let(:system_caller) { instance_double("SystemCaller") }
-  let(:downloader)    { described_class.new(system_caller: system_caller) }
-  let(:id)            { "testid" }
-  let(:command)       { "youtube-dl \"https://youtu.be/#{id}\"" }
+  let(:system_caller)   { instance_double("SystemCaller") }
+  let(:download_record) { instance_double("DownloadRecord") }
+  let(:id)              { "testid" }
+  let(:command)         { "youtube-dl \"https://youtu.be/#{id}\"" }
+  let(:downloader) do
+    described_class.new(
+      system_caller: system_caller,
+      download_record: download_record)
+  end
+
+  let(:record_args) do
+    {time:    :some_time,
+     channel: :some_channel,
+     id:      id}
+  end
 
   describe "#run" do
-    it "downloads the video" do
-      expect(system_caller).to receive(:run).with(command)
-      downloader.run(id)
+    context "the system caller returns false" do
+      it "does not write to the video record" do
+        expect(system_caller).to receive(:run).with(command).
+          and_return(false)
+        downloader.run(record_args)
+      end
+    end
+
+    context "the system caller returns true" do
+      it "writes to the video record" do
+        expect(system_caller).to receive(:run).with(command).
+          and_return(true)
+        expect(download_record).to receive(:write).with(record_args)
+        downloader.run(record_args)
+      end
     end
   end
 end
 
 describe SystemCaller do
   describe "#run" do
-    let(:script_halter) { instance_double("ScriptHalter") }
     let(:id)            { "some id" }
     let(:command)       { "this is a command" }
-    let(:error_msg)     { "error" }
     let(:args)          { [] }
-
-    let(:system_caller) do
-      described_class.new(
-        script_halter: script_halter,
-        args:          args)
-    end
+    let(:system_result) { "the result from the system call" }
+    let(:system_caller) { described_class.new(args: args) }
 
     context "the command exits without an error" do
       it "downloads the video" do
         expect(system_caller).to receive(:system).with(command).
-          and_return(true)
-        system_caller.run(command)
+          and_return(system_result)
+        expect(system_caller.run(command)).to eql(system_result)
       end
-    end
-
-    context "the command exits with an error" do
-      it "halts the script" do
-        expect(system_caller).to receive(:system).with(command).
-          and_return(false)
-        expect(script_halter).to receive(:run).with(error_msg)
-        system_caller.run(command)
-      end
-    end
-  end
-end
-
-describe ScriptHalter do
-  describe "#run" do
-    let(:error_msg)     { "this is an error" }
-    let(:expected_puts) { "youtube-rss: #{error_msg}" }
-    let(:script_halter) { described_class.new }
-
-    it "prints the error message and halts the script" do
-      expect(script_halter).to receive(:puts).with(expected_puts)
-      expect(script_halter).to receive(:exit)
-      script_halter.run(error_msg)
     end
   end
 end
