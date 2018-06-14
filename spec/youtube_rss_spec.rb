@@ -16,68 +16,80 @@ describe Main do
 end
 
 describe Feed do
-  let(:id_in_cache)       { "videos.xml" }
-  let(:id_not_in_cache)   { "some_bad_id" }
-  let(:empty_file_id)     { "empty_file" }
-  let(:type)              { "some_type" }
-  let(:comment)           { "some comment" }
-  let(:feed_cache)        { instance_double("FeedCache") }
-  let(:info_in_cache)     { "#{type}/#{id_in_cache} # #{comment}" }
-  let(:info_not_in_cache) { "#{type}/#{id_not_in_cache} # #{comment}" }
-  let(:empty_file_info)   { "#{type}/#{empty_file_id} # #{comment}" }
-  let(:dir)               { "spec/fixtures/files" }
-  let(:in_cache_env)      { {info: info_in_cache, dir: dir} }
-  let(:not_in_cache_env)  { {info: info_not_in_cache, dir: dir} }
-  let(:empty_file_env)    { {info: empty_file_info, dir: dir} }
-  let(:old_time)          { Time.now - 43200 }
-  let(:sync_env)          { {info: info_in_cache, feed_cache: feed_cache} }
-  let(:feed)              { described_class.new(in_cache_env) }
+  let(:existing_id)        { "videos.xml" }
+  let(:new_id)             { "some_bad_id" }
+  let(:empty_file_id)      { "empty_file" }
+  let(:type)               { "some_type" }
+  let(:comment)            { "some comment" }
+  let(:dir)                { "spec/fixtures/files" }
+  let(:old_time)           { Time.now - 43200 }
+  let(:reader)  { instance_double("FeedCacheReader") }
+  let(:updater) { instance_double("FeedCacheUpdater") }
+
+  let(:new_feed) do
+    described_class.new(
+       info:    "#{type}/#{new_id} # #{comment}",
+       dir:     dir,
+       reader:  reader,
+       updater: updater)
+  end
+
+  let(:existing_feed) do
+    described_class.new(
+       info:    "#{type}/#{existing_id}",
+       dir:     dir,
+       reader:  reader,
+       updater: updater)
+  end
+
+  let(:old_feed) do
+    described_class.new(
+       info: "#{type}/#{id_not_in_cache}",
+       dir: dir,
+       reader: reader,
+       updater: updater)
+  end
+
+  let(:empty_feed) do
+    described_class.new(
+       info: "#{type}/#{id_not_in_cache}",
+       dir: dir,
+       reader: reader,
+       updater: updater)
+  end
 
   describe "#sync" do
-    it "tells the feed cache to run" do
-      feed = described_class.new(sync_env)
-      expect(feed_cache).to receive(:run)
-      feed.sync
-    end
-  end
-
-  describe "#in_cache?" do
-    context "when it is in the cache" do
-      subject { described_class.new(in_cache_env).in_cache? }
-      it { should be true }
-    end
-
-    context "when it is not in the cache" do
-      subject { described_class.new(not_in_cache_env).in_cache? }
-      it { should be false }
-    end
-  end
-
-  describe "#old?" do
-    context "when it is old" do
-      it "should be true" do
-        expect(File).to receive(:mtime).and_return(old_time)
-        expect(feed.old?).to be true
+    context "when there is no cached feed" do
+      it "updates the cache, returns the new feed" do
+        expect(updater).to receive(:run).with(id: new_id, type: type)
+        expect(reader).to receive(:run).and_return(:the_feed)
+        new_feed.sync
+        expect(new_feed.contents).to eql(:the_feed)
       end
     end
 
-    context "when it is not old" do
-      it "should be true" do
-        expect(File).to receive(:mtime).and_return(Time.now)
-        expect(feed.old?).to be false
+    context "when the file is not old or empty" do
+      xit "returns that feed" do
+        expect(reader).to receive(:run).and_return(:the_feed)
+        existing_feed.sync
+        expect(existing_feed.contents).to eql(:the_feed)
       end
     end
-  end
 
-  describe "#empty?" do
-    context "when the cache file is empty" do
-      subject { described_class.new(empty_file_env).empty? }
-      it { should be true }
+    context "when the file is old" do
+      xit "overwrites that file with a new download, and returns its content" do
+        expect(updater).to receive(:run).with(id: existing_id, type: :some_type)
+        expect(reader).to receive(:run).and_return(:the_feed)
+        expect(feed_cache.run(old_feed)).to eql(:the_feed)
+      end
     end
 
-    context "when the cache file is not empty" do
-      subject { described_class.new(in_cache_env).empty? }
-      it { should be false }
+    context "when the file is empty" do
+      xit "overwrites that file with a new download, and returns its content" do
+        expect(updater).to receive(:run).with(id: existing_id, type: :some_type)
+        expect(reader).to receive(:run).and_return(:the_feed)
+        expect(feed_cache.run(empty_feed)).to eql(:the_feed)
+      end
     end
   end
 end
@@ -401,94 +413,94 @@ describe PageDownloader do
   end
 end
 
-describe FeedCache do
-  let(:updater)     { instance_double("FeedCacheUpdater") }
-  let(:reader)      { instance_double("FeedCacheReader") }
-  let(:dir)         { "spec/fixtures/files/" }
-  let(:existing_id) { "videos.xml" }
-  let(:old_time)    { Time.now - (13 * 3600) }
-  let(:new_id)      { "an_id" }
+# describe FeedCache do
+  # let(:updater)     { instance_double("FeedCacheUpdater") }
+  # let(:reader)      { instance_double("FeedCacheReader") }
+  # let(:dir)         { "spec/fixtures/files/" }
+  # let(:existing_id) { "videos.xml" }
+  # let(:old_time)    { Time.now - (13 * 3600) }
+  # let(:new_id)      { "an_id" }
 
-  let(:new_feed) do
-    instance_double(
-      "Feed",
-       id:        new_id,
-       type:      :some_type,
-       old?:      false,
-       in_cache?: false,
-       empty?:    false)
-  end
+  # let(:new_feed) do
+    # instance_double(
+      # "Feed",
+       # id:        new_id,
+       # type:      :some_type,
+       # old?:      false,
+       # in_cache?: false,
+       # empty?:    false)
+  # end
 
-  let(:existing_feed) do
-    instance_double(
-      "Feed",
-       id:        existing_id,
-       type:      :some_type,
-       old?:      false,
-       in_cache?: true,
-       empty?:    false)
-  end
+  # let(:existing_feed) do
+    # instance_double(
+      # "Feed",
+       # id:        existing_id,
+       # type:      :some_type,
+       # old?:      false,
+       # in_cache?: true,
+       # empty?:    false)
+  # end
 
-  let(:old_feed) do
-    instance_double(
-      "Feed",
-       id:        existing_id,
-       type:      :some_type,
-       old?:      true,
-       in_cache?: true,
-       empty?:    false)
-  end
+  # let(:old_feed) do
+    # instance_double(
+      # "Feed",
+       # id:        existing_id,
+       # type:      :some_type,
+       # old?:      true,
+       # in_cache?: true,
+       # empty?:    false)
+  # end
 
-  let(:empty_feed) do
-    instance_double(
-      "Feed",
-       id:        existing_id,
-       type:      :some_type,
-       old?:      true,
-       in_cache?: true,
-       empty?:    true)
-  end
+  # let(:empty_feed) do
+    # instance_double(
+      # "Feed",
+       # id:        existing_id,
+       # type:      :some_type,
+       # old?:      true,
+       # in_cache?: true,
+       # empty?:    true)
+  # end
 
-  let(:feed_cache) do
-    described_class.new(
-      updater: updater,
-      reader:  reader,
-      dir:     dir)
-  end
+  # let(:feed_cache) do
+    # described_class.new(
+      # updater: updater,
+      # reader:  reader,
+      # dir:     dir)
+  # end
 
-  describe "#run" do
-    context "when there is no cached feed" do
-      it "updates the cache, returns the new feed" do
-        expect(updater).to receive(:run).with(id: new_id, type: :some_type)
-        expect(reader).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(new_feed)).to eql(:the_feed)
-      end
-    end
+  # describe "#run" do
+    # context "when there is no cached feed" do
+      # it "updates the cache, returns the new feed" do
+        # expect(updater).to receive(:run).with(id: new_id, type: :some_type)
+        # expect(reader).to receive(:run).and_return(:the_feed)
+        # expect(feed_cache.run(new_feed)).to eql(:the_feed)
+      # end
+    # end
 
-    context "when the file is not old or empty" do
-      it "returns that feed" do
-        expect(reader).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(existing_feed)).to eql(:the_feed)
-      end
-    end
+    # context "when the file is not old or empty" do
+      # it "returns that feed" do
+        # expect(reader).to receive(:run).and_return(:the_feed)
+        # expect(feed_cache.run(existing_feed)).to eql(:the_feed)
+      # end
+    # end
 
-    context "when the file is old" do
-      it "overwrites that file with a new download, and returns its content" do
-        expect(updater).to receive(:run).with(id: existing_id, type: :some_type)
-        expect(reader).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(old_feed)).to eql(:the_feed)
-      end
-    end
+    # context "when the file is old" do
+      # it "overwrites that file with a new download, and returns its content" do
+        # expect(updater).to receive(:run).with(id: existing_id, type: :some_type)
+        # expect(reader).to receive(:run).and_return(:the_feed)
+        # expect(feed_cache.run(old_feed)).to eql(:the_feed)
+      # end
+    # end
 
-    context "when the file is empty" do
-      it "overwrites that file with a new download, and returns its content" do
-        expect(updater).to receive(:run).with(id: existing_id, type: :some_type)
-        expect(reader).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(empty_feed)).to eql(:the_feed)
-      end
-    end
-  end
-end
+    # context "when the file is empty" do
+      # it "overwrites that file with a new download, and returns its content" do
+        # expect(updater).to receive(:run).with(id: existing_id, type: :some_type)
+        # expect(reader).to receive(:run).and_return(:the_feed)
+        # expect(feed_cache.run(empty_feed)).to eql(:the_feed)
+      # end
+    # end
+  # end
+# end
 
 describe FeedCacheReader do
   let(:id)                { "an_id" }

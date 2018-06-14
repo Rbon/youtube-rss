@@ -55,18 +55,32 @@ class Feed
   def initialize(
     info:,
     dir:          "~/.config/youtube-rss/feed-cache",
-    feed_cache:   FeedCache.new)
+    reader:       FeedCacheReader.new,
+    updater:      FeedCacheUpdater.new)
     @info       = info
     @dir        = File.expand_path(dir)
     @id         = info.split("#")[0].split("/")[1].strip
     @type       = info.split("#")[0].split("/")[0].strip
     @comment    = info.split("#")[1].strip
     @feed_cache = feed_cache
+    @updater    = updater
+    @reader     = reader
   end
 
   def sync
-    @contents = feed_cache.run(self)
+    if !in_cache?
+      updater.run(id: id, type: type)
+    elsif old?
+      updater.run(id: id, type: type)
+    elsif empty?
+      updater.run(id: id, type: type)
+    end
+    @contents = reader.run(id)
   end
+
+  private
+
+  attr_reader :info, :dir, :feed_cache, :updater, :reader
 
   def in_cache?
     File.file?(path)
@@ -79,10 +93,6 @@ class Feed
   def empty?
     File.zero?(path)
   end
-
-  private
-
-  attr_reader :info, :dir, :feed_cache
 
   def age_cutoff
     Time.now - 43200
