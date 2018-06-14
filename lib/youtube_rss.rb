@@ -4,35 +4,45 @@ require "json"
 
 # Runs the script
 class Main
-  def initialize(channel_list: ChannelList.new)
+  def initialize(
+    channel_list:   ChannelList.new,
+    feed_list:      FeedList.new)
     @channel_list = channel_list
+    @feed_list    = feed_list
   end
 
   def run
-    channel_list.sync
+    feed_list.sync
   end
 
   private
 
-  attr_reader :channel_list
+  attr_reader :channel_list, :feed_list
 end
 
 # Class to access the user channel list file
 class FeedList
   def initialize(
     feed_class:   Feed,
+    channel_list_class: ChannelList,
     list_file:    "~/.config/youtube-rss/channel_list.txt")
+    @channel_list_class = channel_list_class
     @feed_class = feed_class
     @list_file  = list_file
   end
 
+  def sync
+    list.each(&:sync)
+    channel_list_class.new(feed_list: list).sync
+  end
+
   def list
-    file_lines.map { |line| feed_class.new(info: line) }
+    @list ||= file_lines.map { |line| feed_class.new(info: line) }
   end
 
   private
 
-  attr_reader :list_file, :feed_class
+  attr_reader :list_file, :feed_class, :channel_list_class
 
   def file_lines
     File.readlines(File.expand_path(list_file))
@@ -44,12 +54,18 @@ class Feed
 
   def initialize(
     info:,
-    dir:       "~/.config/youtube-rss/feed-cache")
-    @info    = info
-    @dir     = File.expand_path(dir)
-    @id      = info.split("#")[0].split("/")[1].strip
-    @type    = info.split("#")[0].split("/")[0].strip
-    @comment = info.split("#")[1].strip
+    dir:          "~/.config/youtube-rss/feed-cache",
+    feed_cache:   FeedCache.new)
+    @info       = info
+    @dir        = File.expand_path(dir)
+    @id         = info.split("#")[0].split("/")[1].strip
+    @type       = info.split("#")[0].split("/")[0].strip
+    @comment    = info.split("#")[1].strip
+    @feed_cache = feed_cache
+  end
+
+  def sync
+    @contents = feed_cache.run(self)
   end
 
   def in_cache?
@@ -66,7 +82,7 @@ class Feed
 
   private
 
-  attr_reader :info, :dir
+  attr_reader :info, :dir, :feed_cache
 
   def age_cutoff
     Time.now - 43200

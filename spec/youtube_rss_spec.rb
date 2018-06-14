@@ -1,12 +1,15 @@
 require "youtube_rss"
 
 describe Main do
-  let(:channel_list) { instance_double("ChannelList") }
-  let(:main)         { described_class.new(channel_list: channel_list) }
+  let(:feed_list)    { instance_double("FeedList") }
+
+  let(:main) do described_class.new(
+    feed_list:    feed_list)
+  end
 
   describe "#run" do
-    it "tells the channel list to sync" do
-      expect(channel_list).to receive(:sync)
+    it "syncs the feeds and syncs the channels" do
+      expect(feed_list).to receive(:sync)
       main.run
     end
   end
@@ -18,6 +21,7 @@ describe Feed do
   let(:empty_file_id)     { "empty_file" }
   let(:type)              { "some_type" }
   let(:comment)           { "some comment" }
+  let(:feed_cache)        { instance_double("FeedCache") }
   let(:info_in_cache)     { "#{type}/#{id_in_cache} # #{comment}" }
   let(:info_not_in_cache) { "#{type}/#{id_not_in_cache} # #{comment}" }
   let(:empty_file_info)   { "#{type}/#{empty_file_id} # #{comment}" }
@@ -26,7 +30,16 @@ describe Feed do
   let(:not_in_cache_env)  { {info: info_not_in_cache, dir: dir} }
   let(:empty_file_env)    { {info: empty_file_info, dir: dir} }
   let(:old_time)          { Time.now - 43200 }
+  let(:sync_env)          { {info: info_in_cache, feed_cache: feed_cache} }
   let(:feed)              { described_class.new(in_cache_env) }
+
+  describe "#sync" do
+    it "tells the feed cache to run" do
+      feed = described_class.new(sync_env)
+      expect(feed_cache).to receive(:run)
+      feed.sync
+    end
+  end
 
   describe "#in_cache?" do
     context "when it is in the cache" do
@@ -70,15 +83,28 @@ describe Feed do
 end
 
 describe FeedList do
+  let(:channel_list_class) { class_double("ChannelList") }
+  let(:channel_list) { instance_double("ChannelList") }
   let(:feed_class) { class_double("Feed") }
+  let(:feed)       { instance_double("Feed") }
   let(:fake_list)  { Array.new(5, :some_feed) }
-  let(:feed_list)  { described_class.new(feed_class: feed_class) }
 
-  describe "#list" do
-    it "is a list of feeds" do
+  let(:feed_list) do
+    described_class.new(
+      feed_class: feed_class,
+      channel_list_class: channel_list_class)
+  end
+
+  describe "#sync" do
+    it "downloads any new feeds" do
       expect(File).to receive(:readlines).and_return(fake_list)
-      expect(feed_class).to receive(:new).exactly(fake_list.length).times
-      feed_list.list
+      expect(feed_class).to receive(:new).
+        and_return(feed).
+        exactly(fake_list.length).times
+      expect(feed).to receive(:sync).exactly(fake_list.length).times
+      expect(channel_list_class).to receive(:new).and_return(channel_list)
+      expect(channel_list).to receive(:sync)
+      feed_list.sync
     end
   end
 end
