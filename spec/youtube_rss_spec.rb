@@ -112,7 +112,7 @@ end
 describe Channel do
   let(:name)          { "test channel" }
   let(:entries)       { [{name: name}, :video_entry1, :video_entry2]}
-  let(:feed)          { instance_double("Feed") }
+  let(:feed)          { instance_double("Feed", contents: :some_contents) }
   let(:video)         { instance_double("Video") }
   let(:video_factory) { instance_double("VideoFactory", build: video) }
   let(:entry_parser)  { instance_double("EntryParser", run: entries) }

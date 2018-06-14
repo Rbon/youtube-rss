@@ -50,7 +50,7 @@ class FeedList
 end
 
 class Feed
-  attr_reader :id, :type, :comment
+  attr_reader :id, :type, :comment, :contents
 
   def initialize(
     info:,
@@ -153,7 +153,7 @@ class Channel
   end
 
   def entries
-    @entries ||= entry_parser.run(feed)
+    @entries ||= entry_parser.run(feed.contents)
   end
 end
 
