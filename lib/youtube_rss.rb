@@ -349,36 +349,6 @@ class SystemCaller
   attr_reader :args
 end
 
-class FeedCache
-  def initialize(
-    reader:    FeedCacheReader.new,
-    updater:   FeedCacheUpdater.new,
-    dir:       "~/.config/youtube-rss/feed-cache")
-    @updater = updater
-    @reader  = reader
-    @dir     = File.expand_path(dir)
-  end
-
-  def run(feed)
-    if !feed.in_cache?
-      updater.run(id: feed.id, type: feed.type)
-    elsif feed.old?
-      updater.run(id: feed.id, type: feed.type)
-    elsif feed.empty?
-      updater.run(id: feed.id, type: feed.type)
-    end
-    read_feed(feed.id)
-  end
-
-  private
-
-  attr_reader :updater, :reader, :dir
-
-  def read_feed(id)
-    reader.run(id)
-  end
-end
-
 class FeedCacheReader
   def initialize(dir: "~/.config/youtube-rss/feed-cache")
     @dir = File.expand_path(dir)
