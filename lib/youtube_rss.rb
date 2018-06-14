@@ -174,7 +174,7 @@ end
 # Downloads a web page
 class PageDownloader
   def initialize(
-    http: Net::HTTP)
+    http:   Net::HTTP)
     @http = http
   end
 
