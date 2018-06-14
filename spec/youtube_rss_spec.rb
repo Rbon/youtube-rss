@@ -16,15 +16,15 @@ describe Main do
 end
 
 describe Feed do
-  let(:existing_id)        { "videos.xml" }
-  let(:new_id)             { "some_bad_id" }
-  let(:empty_file_id)      { "empty_file" }
-  let(:type)               { "some_type" }
-  let(:comment)            { "some comment" }
-  let(:dir)                { "spec/fixtures/files" }
-  let(:old_time)           { Time.now - 43200 }
-  let(:reader)  { instance_double("FeedCacheReader") }
-  let(:updater) { instance_double("FeedCacheUpdater") }
+  let(:existing_id)   { "videos.xml" }
+  let(:new_id)        { "some_bad_id" }
+  let(:empty_file_id) { "empty_file" }
+  let(:type)          { "some_type" }
+  let(:comment)       { "some comment" }
+  let(:dir)           { "spec/fixtures/files" }
+  let(:old_time)      { Time.now - 43200 }
+  let(:reader)        { instance_double("FeedCacheReader") }
+  let(:updater)       { instance_double("FeedCacheUpdater") }
 
   let(:new_feed) do
     described_class.new(
