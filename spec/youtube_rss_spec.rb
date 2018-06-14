@@ -44,9 +44,9 @@ describe Feed do
 
   let(:empty_feed) do
     described_class.new(
-       info: "#{type}/#{id_not_in_cache}",
-       dir: dir,
-       reader: reader,
+       info:    "#{type}/#{empty_file_id} # #{comment}",
+       dir:     dir,
+       reader:  reader,
        updater: updater)
   end
 
@@ -80,10 +80,11 @@ describe Feed do
     end
 
     context "when the file is empty" do
-      xit "overwrites that file with a new download, and returns its content" do
-        expect(updater).to receive(:run).with(id: existing_id, type: :some_type)
+      it "overwrites that file with a new download, and returns its content" do
+        expect(updater).to receive(:run).with(id: empty_file_id, type: type)
         expect(reader).to receive(:run).and_return(:the_feed)
-        expect(feed_cache.run(empty_feed)).to eql(:the_feed)
+        empty_feed.sync
+        expect(empty_feed.contents).to eql(:the_feed)
       end
     end
   end
