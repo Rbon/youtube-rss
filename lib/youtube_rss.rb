@@ -173,9 +173,9 @@ end
 
 # Downloads a web page
 class PageDownloader
-  def initialize(url_maker: URLMaker.new, http: Net::HTTP)
-    @url_maker = url_maker
-    @http      = http
+  def initialize(
+    http: Net::HTTP)
+    @http = http
   end
 
   def run(url)
@@ -184,28 +184,23 @@ class PageDownloader
 
   private
 
-  attr_reader :url_maker, :http
-
+  attr_reader :http
 end
 
 # Takes a youtube channel xml feed and parses it into useful data
 class EntryParser
-  def initialize(page_downloader: FeedCache.new)
+  def initialize
     @tag_regex       = /<(?<tag>.*)>(?<value>.*)<.*>/
     @page_downloader = page_downloader
   end
 
   def run(feed)
-    entries(page(feed)).map { |entry| parse(entry) }
+    entries(feed).map { |entry| parse(entry) }
   end
 
   private
 
   attr_reader :tag_regex, :page_downloader
-
-  def page(feed)
-    page_downloader.run(feed)
-  end
 
   def entries(page)
     page.split("<entry>")
