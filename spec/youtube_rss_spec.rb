@@ -36,7 +36,7 @@ describe Feed do
 
   let(:existing_feed) do
     described_class.new(
-       info:    "#{type}/#{existing_id}",
+       info:    "#{type}/#{existing_id} # #{comment}",
        dir:     dir,
        reader:  reader,
        updater: updater)
@@ -69,7 +69,8 @@ describe Feed do
     end
 
     context "when the file is not old or empty" do
-      xit "returns that feed" do
+      it "returns that feed" do
+        expect(File).to receive(:mtime).and_return(Time.now)
         expect(reader).to receive(:run).and_return(:the_feed)
         existing_feed.sync
         expect(existing_feed.contents).to eql(:the_feed)
