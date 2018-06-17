@@ -355,7 +355,8 @@ class SystemCaller
 end
 
 class FeedCacheReader
-  def initialize(dir: "~/.config/youtube-rss/feed-cache")
+  def initialize(
+    dir:   "~/.config/youtube-rss/feed-cache")
     @dir = File.expand_path(dir)
   end
 
