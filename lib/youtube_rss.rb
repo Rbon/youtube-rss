@@ -32,7 +32,12 @@ class FeedList
   end
 
   def sync
-    list.each(&:sync)
+    list.each_with_index do |feed, index|
+      print "\rSyncing feeds [#{index + 1}/#{list.length}]"
+      $stdout.flush
+      feed.sync
+    end
+    print "\n"
     channel_list_class.new(feed_list: list).sync
   end
 
@@ -397,7 +402,6 @@ class FeedDownloader
   end
 
   def run(id:, type:)
-    puts "DOWNLOADING FEED #{id}"
     page(url(id: id, type: type))
   end
 

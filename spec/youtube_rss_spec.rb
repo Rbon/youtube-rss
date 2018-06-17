@@ -106,10 +106,14 @@ describe FeedList do
   describe "#sync" do
     it "downloads any new feeds" do
       expect(File).to receive(:readlines).and_return(fake_list)
-      expect(feed_class).to receive(:new).
-        and_return(feed).
-        exactly(fake_list.length).times
-      expect(feed).to receive(:sync).exactly(fake_list.length).times
+      1.upto(fake_list.length) do |step|
+        expect(feed_class).to receive(:new).and_return(feed)
+        expect(feed).to receive(:sync)
+        expect(feed_list).to receive(:print).
+          with("\rSyncing feeds [#{step}/#{fake_list.length}]")
+        expect($stdout).to receive(:flush)
+      end
+      expect(feed_list).to receive(:print).with("\n")
       expect(channel_list_class).to receive(:new).and_return(channel_list)
       expect(channel_list).to receive(:sync)
       feed_list.sync
@@ -472,7 +476,6 @@ describe FeedDownloader do
         with(id: id, type: type).
         and_return(url)
       expect(page_downloader_double).to receive(:run).with(url).and_return(feed)
-      expect(feed_downloader).to receive(:puts).with("DOWNLOADING FEED #{id}")
       expect(feed_downloader.run(id: id, type: type)).to eql(feed)
     end
   end
