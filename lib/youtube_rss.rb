@@ -23,12 +23,12 @@ end
 # Class to access the user channel list file
 class FeedList
   def initialize(
-    feed_class:   Feed,
-    channel_list_class: ChannelList,
-    list_file:    "~/.config/youtube-rss/channel_list.txt")
+    feed_class:           Feed,
+    channel_list_class:   ChannelList,
+    list_file:            "~/.config/youtube-rss/channel_list.txt")
     @channel_list_class = channel_list_class
-    @feed_class = feed_class
-    @list_file  = list_file
+    @feed_class         = feed_class
+    @list_file          = list_file
   end
 
   def sync
