@@ -143,8 +143,10 @@ class Channel
   end
 
   def sync
-    puts name
-    new_videos.each(&:download)
+    if !new_videos.empty?
+      puts name
+      new_videos.each(&:download)
+    end
   end
 
   private

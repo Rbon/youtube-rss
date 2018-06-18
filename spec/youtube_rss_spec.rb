@@ -122,27 +122,43 @@ describe FeedList do
 end
 
 describe Channel do
-  let(:name)          { "test channel" }
-  let(:entries)       { [{name: name}, :video_entry1, :video_entry2]}
-  let(:feed)          { instance_double("Feed", contents: :some_contents) }
-  let(:video)         { instance_double("Video") }
-  let(:video_factory) { instance_double("VideoFactory", build: video) }
-  let(:entry_parser)  { instance_double("EntryParser", run: entries) }
-  let(:video_list)    { [video, video] }
-
-  let(:channel) do
-    described_class.new(
-      feed:          feed,
-      entry_parser:  entry_parser,
-      video_factory: video_factory)
-  end
+  let(:name)              { "test channel" }
+  let(:entries)           { [{name: name}, :video_entry1, :video_entry2]}
+  let(:feed)              { instance_double("Feed", contents: :some_contents) }
+  let(:new_video)         { instance_double("Video", new?: true) }
+  let(:old_video)         { instance_double("Video", new?: false) }
+  let(:new_video_factory) { instance_double("VideoFactory", build: new_video) }
+  let(:old_video_factory) { instance_double("VideoFactory", build: old_video) }
+  let(:entry_parser)      { instance_double("EntryParser", run: entries) }
 
   describe "#sync" do
-    it "downloads all the new videos" do
-      expect(entry_parser).to receive(:run)
-      expect(video).to receive(:new?).exactly(2).times
-      expect(channel).to receive(:puts).with(name)
-      channel.sync
+    let(:channel) do
+      described_class.new(
+        feed:          feed,
+        entry_parser:  entry_parser,
+        video_factory: new_video_factory)
+    end
+
+    context "when there are new videos" do
+      it "downloads all the new videos" do
+        expect(entry_parser).to receive(:run)
+        expect(channel).to receive(:puts).with(name)
+        expect(new_video).to receive(:download).exactly(entries.length - 1).times
+        channel.sync
+      end
+    end
+
+    context "when there are no new videos" do
+      let(:channel) do
+        described_class.new(
+          feed:          feed,
+          entry_parser:  entry_parser,
+          video_factory: old_video_factory)
+      end
+
+      it "does nothing" do
+        channel.sync
+      end
     end
   end
 end
